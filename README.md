@@ -1,4 +1,4 @@
-#Scraping Reddit, a Natural Language Processing Project
+# Scraping Reddit, a Natural Language Processing Project
 
 The project's goal is to download data from several subreddits, analyze the data with Natural Language Processing tools and derive tangible conclusions, which later will be presented in the form of a comprehensive report.
 
