@@ -1,8 +1,9 @@
-#Reddit Collector
-###Usage:
+# Reddit Collector
+
+### Usage:
 `collector.py [subreddits...]`
 
-###Description
+### Description
 
 This script takes the top 1000 posts of all time and extracts all comments if there are at most `LIMIT` of them. Otherwise, it just extracts the submission post. The process terminates when all topics have been extracted or the total number of comments exceed `COMMENTS`.
 
