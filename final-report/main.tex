@@ -9,7 +9,7 @@ Youssef Ibrahim\\
 Igor Sałuch\\
 Mike Urmich\\
 Samuel Menezes}
-\date{v0.0.1, 16 March 2019}
+\date{v0.0.2, \\\\16 March 2019}
 
 
 \usepackage{hyperref}
@@ -30,18 +30,32 @@ Samuel Menezes}
 \begin{document}
 
 \maketitle
-
+\newpage
 \tableofcontents
+\newpage
 
 \section{Project description}
 
 The project was pitched as a Custom Project in order to pass Natural Language Processing, a sixth semester elective course ran by Dr Agnieszka Jastrzębska at Warsaw University of Technology. \\ \\
-This project combines different Data Science principles in order to analyze different Reddit communities, return tangible statistics and derive interesting conclusions about similarities and differences of different areas of the site.
+This project combines different Data Science principles in order to analyze different Reddit communities, return tangible statistics and derive interesting conclusions about similarities and differences of different areas of the site.\\ \\
+The partial goals of the program involve:
+\begin{itemize}
+	\item Classifying entries based on different communities.
+	\item Creating statistics based on entries stored in a database.
+	\item Measuring what are the common factors between different Reddit communities.
+\end{itemize}
 
+\begin{figure}[htb!]
+    \centering
+    \includegraphics[width=\textwidth]{reddit_banner.png}
+    \caption{Reddit banner}
+    \label{fig:mesh1}
+\end{figure}
+\newpage
 
 \section{The seven roles of the project}
 There are seven members in the team, each one with a separate responsibility.
-\subsection{Kacper Leszczyński, Creating a database and a tool to scrape Reddit}
+\subsection{Kacper Leszczyński, Creating a database and scraping Reddit}
 The first role of the program, a crucial one. Without this role nothing would be possible to achieve after that point. His responsibilities involved:
 \begin{itemize}
 	\item creating a database that people would be able to utilize in the later stages of the program as shown above,
@@ -87,7 +101,7 @@ Looking at the database and statistics created by Kamil, finding what connects a
 	\item writing a part of the report with found similarities and differences,
 \end{itemize}
 
-\subsection{Bartłomiej Szymański, coordinating the project, scripting charts and writing report}
+\subsection{Bartłomiej Szymański, coordinating, scripting charts and report}
 The final role, combining the work of all other team members, deriving conclusions and making charts for each of the statistics. His responsibilities involved:
 \begin{itemize}
 	\item coordinating the work of everyone involved in the project,
@@ -97,11 +111,32 @@ The final role, combining the work of all other team members, deriving conclusio
 
 \section{Technical details}
 Every observation in this document follows a snapshot of Reddit communities scraped on March 16th, 2019. \\ \\
-Every community that was considered has been scraped according to at most 1,000 all-time highest rated posts, with 100,000 comments and the end of a given thread being a limit for each of the communities before moving onto the next one. \\ \\
-The scraping algorithm has been set to not scrape threads that have more than 2,000 comments to avoid a scenario where 7-8 threads would be enough to populate the database for a given community with communities such as /r/iama or /r/news. Those threads still get added to a Submission table, just their comments do not get added to the Comments table.\\ \\
+Every community that was considered has been scraped according to at most 1,000 all-time highest rated posts, with 100,000 comments and the end of a given Submission being a limit for each of the communities before moving onto the next one. \\ \\
+The scraping algorithm has been set to not scrape Submissions that have more than 2,000 comments to avoid a scenario where 7-8 Submissions would be enough to populate the database for a given community with communities such as /r/iama or /r/news. Those Submissions still get added to a Submission table, just their comments do not get added to the Comments table.\\ \\
 The database to which all the comments have been scraped is available on Google Drive. \\ \\
-There are three tables in it, one for Communities and their names, one for Submissions and one for Comments. The tables follow \href{https://github.com/scrapingredditboys/ScrapingRedditNaturalLanguageProcessingWUT2019/blob/master/reddit-collector/tables.sql}{this structure}.
+There are three tables in it, one for Communities and their names, one for Submissions and one for Comments. The tables follow \href{https://github.com/scrapingredditboys/ScrapingRedditNaturalLanguageProcessingWUT2019/blob/master/reddit-collector/tables.sql}{this structure}.\\ \\
+The list of 32 Subreddits scraped to the database looks as follows:
+\begin{verbatim}
+spacex, kerbalspaceprogram, bitcoin, pcmasterrace
+showerthoughts, outside, dankmemes, wholesomememes
+2meirl4meirl, writingprompts, tifu, news
+nottheonion, 4chan, music, iama, math, itookapicture,
+learnprogramming, gaming, movies, mylittlepony, 
+gonewild, anime, sports, furry_irl, europe, 
+apple, android, ATBGE, depression, disneyvacation
+\end{verbatim}
 
+\subsection{Verifying if Subreddits are good targets for scraping}
+
+A \href{https://github.com/scrapingredditboys/ScrapingRedditNaturalLanguageProcessingWUT2019/blob/master/reddit-collector/validator.py}{special tool} has been developed to verify if a given subreddit is a good target for scraping operation. It takes Subreddit names as input parameters and based on our applied criteria (API can return up to 1,000 top rated posts of all time, the amount of comments in a Submission cannot exceed 2,000) finds if it's possible to obtain 100,000 comments.
+
+\begin{figure}[htb!]
+    \centering
+    \includegraphics[width=\textwidth]{validator.png}
+    \caption{the Subreddit validator in action}
+    \label{fig:mesh1}
+\end{figure}
+Two Subreddits on the list that have not met 100,000 comments have been added to the list regardless, \textit{/r/disneyvacation} at 97,714 comments and \textit{/r/outside} at 95,103 comments.
 
 \section{Statistics}
 \section{Similarities between Subreddits}
