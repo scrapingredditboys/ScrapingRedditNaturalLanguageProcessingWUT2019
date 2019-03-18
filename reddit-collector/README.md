@@ -19,3 +19,7 @@ In order for the script to work, the `client_id` and `client_secret` need to be 
 ### Description
 
 This script outputs which subreddits have at least `COMMENTS` comments after applying the limit of `LIMIT`. Requires similar configuration as stated above.
+
+# Database
+
+The database structure can be found in `tables.sql`, while the PostgreSQL database dump can be found [here](https://drive.google.com/open?id=1eVMN0cTHSuY3mnnkM8_UgkqlXlvftJlg). It was exported using pgAdmin III with custom format.
