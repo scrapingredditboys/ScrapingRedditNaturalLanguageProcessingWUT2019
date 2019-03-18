@@ -68,6 +68,9 @@ for subreddit in subreddits:
     submission.comments.replace_more(limit=None)
     comment_list = submission.comments.list()
     comments = []
+    if len(comment_list) == 0:
+      print('    Topic invalid. No comments found (0)')
+      continue
     print('    Found ' + str(len(comment_list)) + ' comments.')
     sys.stdout.flush()
     for comment in comment_list:
