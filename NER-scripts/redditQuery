@@ -1,0 +1,39 @@
+-- Updating the submissions table.
+-- Finding all occurences of a URL regex in the title column and inserting it in the links column
+UPDATE submissions s
+SET links = (
+	array_to_string(array(
+	SELECT match[1] AS result
+	FROM submissions ss
+	CROSS JOIN LATERAL regexp_matches(title, '(?:(?:https?|ftp):\/\/|\b(?:[a-z\d]+\.))(?:(?:[^\s()<>]+|\((?:[^\s()<>]+|(?:\([^\s()<>]+\)))?\))+(?:\((?:[^\s()<>]+|(?:\(?:[^\s()<>]+\)))?\)|[^\s`!()\[\]{};:''".,<>?«»""'''']))?', 'g') AS match
+	WHERE ss.id = s.id, ', ')
+);
+
+-- Update submissions table.
+-- Removing all the URLs form the title column
+UPDATE submissions
+SET title = regexp_replace(title,
+E'(?:(?:https?|ftp):\/\/|\b(?:[a-z\d]+\.))(?:(?:[^\s()<>]+|\((?:[^\s()<>]+|(?:\([^\s()<>]+\)))?\))+(?:\((?:[^\s()<>]+|(?:\(?:[^\s()<>]+\)))?\)|[^\s`!()\[\]{};:''".,<>?«»""'''']))?', E'', 'g')
+WHERE title ~ E'(?:(?:https?|ftp):\/\/|\b(?:[a-z\d]+\.))(?:(?:[^\s()<>]+|\((?:[^\s()<>]+|(?:\([^\s()<>]+\)))?\))+(?:\((?:[^\s()<>]+|(?:\(?:[^\s()<>]+\)))?\)|[^\s`!()\[\]{};:''".,<>?«»""'''']))?'
+
+
+
+-- Updating the comments table.
+-- Finding all occurences of a URL regex in the body column and inserting it in the links column
+UPDATE comments s
+SET links = (
+	array_to_string(array(
+	SELECT match[1] AS result
+	FROM comments ss
+	CROSS JOIN LATERAL regexp_matches(body, '(?:(?:https?|ftp):\/\/|\b(?:[a-z\d]+\.))(?:(?:[^\s()<>]+|\((?:[^\s()<>]+|(?:\([^\s()<>]+\)))?\))+(?:\((?:[^\s()<>]+|(?:\(?:[^\s()<>]+\)))?\)|[^\s`!()\[\]{};:''".,<>?«»""'''']))?', 'g') AS match
+	WHERE ss.id = s.id, ', ')
+);
+
+-- Update comments table.
+-- Removing all the URLs form the body column
+UPDATE comments
+SET body = regexp_replace(body,
+E'(?:(?:https?|ftp):\/\/|\b(?:[a-z\d]+\.))(?:(?:[^\s()<>]+|\((?:[^\s()<>]+|(?:\([^\s()<>]+\)))?\))+(?:\((?:[^\s()<>]+|(?:\(?:[^\s()<>]+\)))?\)|[^\s`!()\[\]{};:''".,<>?«»""'''']))?', E'', 'g')
+WHERE body ~ E'(?:(?:https?|ftp):\/\/|\b(?:[a-z\d]+\.))(?:(?:[^\s()<>]+|\((?:[^\s()<>]+|(?:\([^\s()<>]+\)))?\))+(?:\((?:[^\s()<>]+|(?:\(?:[^\s()<>]+\)))?\)|[^\s`!()\[\]{};:''".,<>?«»""'''']))?'
+
+
