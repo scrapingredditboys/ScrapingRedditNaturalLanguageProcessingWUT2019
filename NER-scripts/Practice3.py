@@ -9,9 +9,14 @@ import pandas
 from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
 import math
+import re, string, timeit
+import csv
 
-jar = './stanford-ner-2018-10-16/stanford-ner.jar'
-model = './stanford-ner-2018-10-16/finalTrainSet-EnglishReddit-Acc96.gz'
+exclude = set(string.punctuation)
+table = str.maketrans('', '', string.punctuation)
+regex = re.compile('[%s]' % re.escape(string.punctuation))
+jar = './stanford-ner.jar'
+model = './finalTrainSet-EnglishReddit-Acc96.gz'
 
 # Prepare NER tagger with english model
 ner_tagger = StanfordNERTagger(model, jar, encoding='utf8')
@@ -61,7 +66,8 @@ cutoff = int(.75 * len(tagged_sentences))
 training_sentences = tagged_sentences[:cutoff]
 test_sentences = tagged_sentences[cutoff:]
 
-
+def test_trans(s):
+    return s.translate(table)
 
 def transform_to_dataset(tagged_sentences):
     X, y = [], []
@@ -94,8 +100,8 @@ print("Accuracy:", clf.score(X_test, y_test))
 
 lemmatizer = WordNetLemmatizer()
 
-# submissions = pandas.read_csv("./submissions.csv")
-#
+# submissions = pandas.read_csv("./submissions (2).csv")
+
 # for index, row in submissions.iterrows():
 #     if row['title'] is not None and not pandas.isna(row['title']):
 #         words = tree2conlltags(ne_chunk(pos_tag(word_tokenize(row['title']))))
@@ -103,53 +109,63 @@ lemmatizer = WordNetLemmatizer()
 #         nerState = ''
 #         for tup in words:
 #             # 2. Lemmatize Single Word with the appropriate POS tag
+#             currStr = test_trans(tup[0])
 #             if words[len(words)-1] == tup:
-#                 newState += lemmatizer.lemmatize(tup[0], get_wordnet_pos(tup[0])) + "."
-#                 nerState += tup[2]
+#                 if currStr is not None:
+#                     newState += lemmatizer.lemmatize(currStr, get_wordnet_pos(tup[0])) + "."
+#                     nerState += tup[2]
 #             else:
-#                 newState += lemmatizer.lemmatize(tup[0], get_wordnet_pos(tup[0])) + " "
-#                 nerState += tup[2] + " "
+#                 if currStr is not None:
+#                     newState += lemmatizer.lemmatize(currStr, get_wordnet_pos(tup[0])) + " "
+#                     nerState += tup[2] + " "
 #         submissions.loc[index, 'title'] = newState
 #         submissions.loc[index, 'titlener'] = nerState
-#
-# print("First")
-#
+#     print("First: ", index, "/", submissions.size)
+
+
+
 # for index, row in submissions.iterrows():
 #     if row['selftext'] is not None and not pandas.isna(row['selftext']):
 #         words = tree2conlltags(ne_chunk(pos_tag(word_tokenize(row['selftext']))))
 #         newState = ''
 #         nerState = ''
 #         for tup in words:
+#             currStr = test_trans(tup[0])
 #             # 2. Lemmatize Single Word with the appropriate POS tag
 #             if words[len(words) - 1] == tup:
-#                 newState += lemmatizer.lemmatize(tup[0], get_wordnet_pos(tup[0])) + "."
-#                 nerState += tup[2]
+#                 if currStr is not None:
+#                     newState += lemmatizer.lemmatize(currStr, get_wordnet_pos(tup[0])) + "."
+#                     nerState += tup[2]
 #             else:
-#                 newState += lemmatizer.lemmatize(tup[0], get_wordnet_pos(tup[0])) + " "
-#                 nerState += tup[2] + " "
+#                 if currStr is not None:
+#                     newState += lemmatizer.lemmatize(currStr, get_wordnet_pos(tup[0])) + " "
+#                     nerState += tup[2] + " "
 #         submissions.loc[index, 'selftext'] = newState
 #         submissions.loc[index, 'selftextner'] = nerState
-#
+#     print("Second: ", index, "/", submissions.size)
+
 # submissions.to_csv('newSubmissions.csv', sep=',', encoding='utf-8')
 
-# print("Second")
-comments = pandas.read_csv("./comments.csv")
+comments = pandas.read_csv("./comments (1).csv", delimiter='\n', quotechar=None, quoting=2)
 
 for index, row in comments.iterrows():
-    if row['body'] is not None and not pandas.isna(row['body']):
+    if row['body'] is not '':
         words = tree2conlltags(ne_chunk(pos_tag(word_tokenize(row['body']))))
         newState = ''
         nerState = ''
         for tup in words:
+            currStr = test_trans(tup[0])
             # 2. Lemmatize Single Word with the appropriate POS tag
             if words[len(words) - 1] == tup:
-                newState += lemmatizer.lemmatize(tup[0], get_wordnet_pos(tup[0])) + "."
-                nerState += tup[2]
+                if currStr is not None:
+                    newState += lemmatizer.lemmatize(currStr, get_wordnet_pos(tup[0])) + "."
+                    nerState += tup[2]
             else:
-                newState += lemmatizer.lemmatize(tup[0], get_wordnet_pos(tup[0])) + " "
-                nerState += tup[2] + " "
+                if currStr is not None:
+                    newState += lemmatizer.lemmatize(currStr, get_wordnet_pos(tup[0])) + " "
+                    nerState += tup[2] + " "
         comments.loc[index, 'body'] = newState
         comments.loc[index, 'bodyner'] = nerState
-    print(index, "/", len(comments.size))
+    print("Third: ", index, "/", comments.size)
 
 comments.to_csv('newComments.csv', sep=',', encoding='utf-8')
