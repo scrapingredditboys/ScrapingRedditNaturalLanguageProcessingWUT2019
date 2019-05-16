@@ -3,8 +3,7 @@ import pandas as pd
 import collections
 from collections import defaultdict
 
-readingEmotions = pd.read_csv('emotions.csv')
-readingEmotions
+readingEmotions = pd.read_csv('source-csv-files/emotions.csv')
 
 def letter_range(start, stop="{", step=1):
     """Yield a range of lowercase letters.""" 
@@ -15,7 +14,7 @@ list_of_word = []
 list_of_sub = []
 list_of_ratio = []
 for i in list(letter_range("a", "d")):
-    avg = pd.read_csv('average_usage_of_words_trial{0}.csv'.format(i))
+    avg = pd.read_csv('source-csv-files/average_usage_of_words_trial{0}.csv'.format(i))
     
     for word in avg['Words']:
         list_of_word.append(word)
@@ -29,7 +28,6 @@ for i in list(letter_range("a", "d")):
 print(len(list_of_word), len(list_of_sub), len(list_of_ratio))
 res = [(i, j, k) for i, j, k in zip(list_of_word, list_of_sub, list_of_ratio)]
 print(len(res))
-res
 
 words_in_emo = []
 for i in readingEmotions['Word']:
@@ -50,7 +48,6 @@ for i in without:
     
 wordy = list(dict.fromkeys(wordy))
 print(len(wordy))
-wordy
 
 df = pd.DataFrame(wordy, columns = ['Words'])
 df.insert(1, "Valence", 0.0)
@@ -63,7 +60,5 @@ for idx, i in enumerate(df['Words']):
   df.at[idx, 'Valence'] = "{0:.3f}".format(abc.Valence)
   df.at[idx, 'Arousal'] = "{0:.3f}".format(abc.Arousal)
   df.at[idx, 'Dominance'] = "{0:.3f}".format(abc.Dominance)
-df
-
-df
+  
 df.to_csv('EmotionsClassifier.csv', index=None, header=True)
