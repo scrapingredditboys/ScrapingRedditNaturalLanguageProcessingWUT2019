@@ -20,7 +20,8 @@ for i in range(55):
         interval = submission[(submission['weekday'] == days ) & (submission['hour'] == hours)]
         sentiment_pos = interval.loc[interval['hour'] == hours, 'sentiment_pos']
         sentiment_neg = interval.loc[interval['hour'] == hours, 'sentiment_neg']
-        meany = (sentiment_pos - sentiment_neg).astype(float)
+        comments = interval.loc[interval['hour'] == hours , 'comments']
+        meany = np.where(comments == 0, 0, (sentiment_pos - sentiment_neg)/comments).astype(float)
         sentiment_on_day_hour_mean.insert(x,  list(map('{:.3f}'.format,meany)))
         x += 1
         
