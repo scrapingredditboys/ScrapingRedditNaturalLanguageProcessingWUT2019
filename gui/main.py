@@ -95,7 +95,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #TODO: performance: maybe keep it opened in memory
         with open(path) as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
-            result = next(itertools.islice(reader, length, None))[self.subreddits.index(sub) + 1]
+            if self.lengthRawDataCheckBox.isChecked() or length > 49:
+                result = next(itertools.islice(reader, length, None))[self.subreddits.index(sub) + 1]
+            else:
+                sum = 0
+                i = 0
+                for row in list(reader)[1:49]:
+                    sum += float(row[self.subreddits.index(sub) + 1])
+                    i += 1
+                result = sum/i
+
             print("Result:", result)
             if self.lengthRawDataCheckBox.isChecked():
                 result_string = str(result)
