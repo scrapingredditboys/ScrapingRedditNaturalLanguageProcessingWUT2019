@@ -25,8 +25,20 @@
         <property name="tabPosition">
          <enum>QTabWidget::North</enum>
         </property>
+        <property name="tabShape">
+         <enum>QTabWidget::Rounded</enum>
+        </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>5</number>
+        </property>
+        <property name="usesScrollButtons">
+         <bool>true</bool>
+        </property>
+        <property name="documentMode">
+         <bool>false</bool>
+        </property>
+        <property name="tabBarAutoHide">
+         <bool>false</bool>
         </property>
         <widget class="QWidget" name="subredditTab">
          <attribute name="title">
@@ -96,25 +108,25 @@
             <property name="bottomMargin">
              <number>10</number>
             </property>
-            <item row="0" column="0">
+            <item row="1" column="0">
              <widget class="QLabel" name="label_4">
               <property name="text">
                <string>comment length</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
+            <item row="1" column="1">
              <widget class="QSpinBox" name="lengthSpinBox"/>
             </item>
-            <item row="1" column="0">
+            <item row="0" column="1">
+             <widget class="QComboBox" name="lengthSubNameComboBox"/>
+            </item>
+            <item row="0" column="0">
              <widget class="QLabel" name="label_5">
               <property name="text">
-               <string>subreddit</string>
+               <string>subreddit name</string>
               </property>
              </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QComboBox" name="comboBox"/>
             </item>
            </layout>
           </item>
@@ -175,11 +187,6 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="upvoteTab">
-         <attribute name="title">
-          <string>Sentiments and upvotes</string>
-         </attribute>
-        </widget>
         <widget class="QWidget" name="timeTab">
          <attribute name="title">
           <string>Karma based on time</string>
@@ -210,7 +217,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QComboBox" name="subredditNameComboBox"/>
+             <widget class="QComboBox" name="timeSubNameComboBox"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_2">
@@ -225,7 +232,7 @@
             <item row="2" column="0">
              <widget class="QLabel" name="label_3">
               <property name="text">
-               <string>time of a day</string>
+               <string>time of day</string>
               </property>
              </widget>
             </item>
@@ -263,7 +270,7 @@
               <item>
                <widget class="QCheckBox" name="combineDaysCheckBox">
                 <property name="text">
-                 <string>combine days of a week</string>
+                 <string>combine days of week</string>
                 </property>
                </widget>
               </item>
@@ -305,15 +312,369 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="commentsTab">
+        <widget class="QWidget" name="upvoteTab">
          <attribute name="title">
-          <string>No. of comments</string>
+          <string>Sentiments and upvotes</string>
          </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <layout class="QFormLayout" name="formLayout_3">
+            <property name="horizontalSpacing">
+             <number>10</number>
+            </property>
+            <property name="leftMargin">
+             <number>50</number>
+            </property>
+            <property name="topMargin">
+             <number>10</number>
+            </property>
+            <property name="rightMargin">
+             <number>50</number>
+            </property>
+            <property name="bottomMargin">
+             <number>10</number>
+            </property>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>upvote ratio</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="upvoteSpinBox">
+              <property name="suffix">
+               <string notr="true">%</string>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="value">
+               <number>30</number>
+              </property>
+              <property name="displayIntegerBase">
+               <number>10</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>subreddit name</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="upvoteSubNameComboBox"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_12">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <property name="sizeConstraint">
+               <enum>QLayout::SetMinimumSize</enum>
+              </property>
+              <property name="leftMargin">
+               <number>50</number>
+              </property>
+              <property name="topMargin">
+               <number>10</number>
+              </property>
+              <property name="rightMargin">
+               <number>50</number>
+              </property>
+              <property name="bottomMargin">
+               <number>10</number>
+              </property>
+              <item>
+               <widget class="QCheckBox" name="upvoteRawDataCheck">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>raw data</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QLabel" name="upvoteResultLabel">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
-        <widget class="QWidget" name="sentimentsTab">
+        <widget class="QWidget" name="widget">
          <attribute name="title">
-          <string>Sentiments</string>
+          <string>Comments based on time</string>
          </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <layout class="QFormLayout" name="formLayout_4">
+            <property name="horizontalSpacing">
+             <number>10</number>
+            </property>
+            <property name="leftMargin">
+             <number>50</number>
+            </property>
+            <property name="topMargin">
+             <number>10</number>
+            </property>
+            <property name="rightMargin">
+             <number>50</number>
+            </property>
+            <property name="bottomMargin">
+             <number>10</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_8">
+              <property name="text">
+               <string>subreddit name</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="commentsTimeSubNameComboBox"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_9">
+              <property name="text">
+               <string>weekday</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="commentsWeekdayComboBox"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_10">
+              <property name="text">
+               <string>time of day</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QSpinBox" name="commentsMinuteSpinBox"/>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="commentsHourSpinBox"/>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_13">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_8">
+              <property name="sizeConstraint">
+               <enum>QLayout::SetMinimumSize</enum>
+              </property>
+              <property name="leftMargin">
+               <number>50</number>
+              </property>
+              <property name="topMargin">
+               <number>10</number>
+              </property>
+              <property name="rightMargin">
+               <number>50</number>
+              </property>
+              <property name="bottomMargin">
+               <number>10</number>
+              </property>
+              <item>
+               <widget class="QCheckBox" name="commentsCombineDaysCheckBox">
+                <property name="text">
+                 <string>combine days of week</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="commentsTimeRawDataCheckBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>raw data</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QLabel" name="commentsTimeResultLabel">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="meanSentimentsTab">
+         <attribute name="title">
+          <string>Mean sentiments</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <layout class="QFormLayout" name="formLayout_5">
+            <property name="horizontalSpacing">
+             <number>10</number>
+            </property>
+            <property name="leftMargin">
+             <number>50</number>
+            </property>
+            <property name="topMargin">
+             <number>10</number>
+            </property>
+            <property name="rightMargin">
+             <number>50</number>
+            </property>
+            <property name="bottomMargin">
+             <number>10</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>subreddit name</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="meanSentimentSubNameComboBox"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>weekday</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="meanSentimentWeekdayComboBox"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_13">
+              <property name="text">
+               <string>time of day</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QSpinBox" name="meanSentimentMinuteSpinBox"/>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="meanSentimentHourSpinBox"/>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_14">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <property name="sizeConstraint">
+               <enum>QLayout::SetMinimumSize</enum>
+              </property>
+              <property name="leftMargin">
+               <number>50</number>
+              </property>
+              <property name="topMargin">
+               <number>10</number>
+              </property>
+              <property name="rightMargin">
+               <number>50</number>
+              </property>
+              <property name="bottomMargin">
+               <number>10</number>
+              </property>
+              <item>
+               <widget class="QCheckBox" name="meanSentimentCombineDaysCheckBox">
+                <property name="text">
+                 <string>combine days of week</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="meanSentimentRawDataCheckBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>raw data</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QLabel" name="meanSentimentResultLabel">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
        </widget>
       </item>
