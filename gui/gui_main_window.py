@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file 'designer/main_window.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -113,27 +114,21 @@ class Ui_MainWindow(object):
         self.label = QtWidgets.QLabel(self.timeTab)
         self.label.setObjectName("label")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
-        self.timeSubNameComboBox = QtWidgets.QComboBox(self.timeTab)
-        self.timeSubNameComboBox.setObjectName("timeSubNameComboBox")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.timeSubNameComboBox)
+        self.karmaTimeSubNameComboBox = QtWidgets.QComboBox(self.timeTab)
+        self.karmaTimeSubNameComboBox.setObjectName("karmaTimeSubNameComboBox")
+        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.karmaTimeSubNameComboBox)
         self.label_2 = QtWidgets.QLabel(self.timeTab)
         self.label_2.setObjectName("label_2")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_2)
-        self.weekdayComboBox = QtWidgets.QComboBox(self.timeTab)
-        self.weekdayComboBox.setObjectName("weekdayComboBox")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.weekdayComboBox)
+        self.karmaWeekdayComboBox = QtWidgets.QComboBox(self.timeTab)
+        self.karmaWeekdayComboBox.setObjectName("karmaWeekdayComboBox")
+        self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.karmaWeekdayComboBox)
         self.label_3 = QtWidgets.QLabel(self.timeTab)
         self.label_3.setObjectName("label_3")
         self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_3)
-        self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.minuteSpinBox = QtWidgets.QSpinBox(self.timeTab)
-        self.minuteSpinBox.setObjectName("minuteSpinBox")
-        self.horizontalLayout.addWidget(self.minuteSpinBox)
-        self.hourSpinBox = QtWidgets.QSpinBox(self.timeTab)
-        self.hourSpinBox.setObjectName("hourSpinBox")
-        self.horizontalLayout.addWidget(self.hourSpinBox)
-        self.formLayout.setLayout(2, QtWidgets.QFormLayout.FieldRole, self.horizontalLayout)
+        self.karmaTimeEdit = QtWidgets.QTimeEdit(self.timeTab)
+        self.karmaTimeEdit.setObjectName("karmaTimeEdit")
+        self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.karmaTimeEdit)
         self.verticalLayout_3.addLayout(self.formLayout)
         self.verticalLayout_7 = QtWidgets.QVBoxLayout()
         self.verticalLayout_7.setObjectName("verticalLayout_7")
@@ -242,15 +237,9 @@ class Ui_MainWindow(object):
         self.label_10 = QtWidgets.QLabel(self.widget)
         self.label_10.setObjectName("label_10")
         self.formLayout_4.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_10)
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.commentsMinuteSpinBox = QtWidgets.QSpinBox(self.widget)
-        self.commentsMinuteSpinBox.setObjectName("commentsMinuteSpinBox")
-        self.horizontalLayout_2.addWidget(self.commentsMinuteSpinBox)
-        self.commentsHourSpinBox = QtWidgets.QSpinBox(self.widget)
-        self.commentsHourSpinBox.setObjectName("commentsHourSpinBox")
-        self.horizontalLayout_2.addWidget(self.commentsHourSpinBox)
-        self.formLayout_4.setLayout(2, QtWidgets.QFormLayout.FieldRole, self.horizontalLayout_2)
+        self.commentsTimeEdit = QtWidgets.QTimeEdit(self.widget)
+        self.commentsTimeEdit.setObjectName("commentsTimeEdit")
+        self.formLayout_4.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.commentsTimeEdit)
         self.verticalLayout_5.addLayout(self.formLayout_4)
         self.verticalLayout_13 = QtWidgets.QVBoxLayout()
         self.verticalLayout_13.setObjectName("verticalLayout_13")
@@ -306,15 +295,9 @@ class Ui_MainWindow(object):
         self.label_13 = QtWidgets.QLabel(self.meanSentimentsTab)
         self.label_13.setObjectName("label_13")
         self.formLayout_5.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_13)
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.meanSentimentMinuteSpinBox = QtWidgets.QSpinBox(self.meanSentimentsTab)
-        self.meanSentimentMinuteSpinBox.setObjectName("meanSentimentMinuteSpinBox")
-        self.horizontalLayout_3.addWidget(self.meanSentimentMinuteSpinBox)
-        self.meanSentimentHourSpinBox = QtWidgets.QSpinBox(self.meanSentimentsTab)
-        self.meanSentimentHourSpinBox.setObjectName("meanSentimentHourSpinBox")
-        self.horizontalLayout_3.addWidget(self.meanSentimentHourSpinBox)
-        self.formLayout_5.setLayout(2, QtWidgets.QFormLayout.FieldRole, self.horizontalLayout_3)
+        self.meanSentimentTimeEdit = QtWidgets.QTimeEdit(self.meanSentimentsTab)
+        self.meanSentimentTimeEdit.setObjectName("meanSentimentTimeEdit")
+        self.formLayout_5.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.meanSentimentTimeEdit)
         self.verticalLayout_6.addLayout(self.formLayout_5)
         self.verticalLayout_14 = QtWidgets.QVBoxLayout()
         self.verticalLayout_14.setObjectName("verticalLayout_14")
@@ -359,7 +342,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(5)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -374,6 +357,7 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "subreddit name"))
         self.label_2.setText(_translate("MainWindow", "weekday"))
         self.label_3.setText(_translate("MainWindow", "time of day"))
+        self.karmaTimeEdit.setDisplayFormat(_translate("MainWindow", "HH:mm"))
         self.combineDaysCheckBox.setText(_translate("MainWindow", "combine days of week"))
         self.rawDataCheckBox.setText(_translate("MainWindow", "raw data"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.timeTab), _translate("MainWindow", "Karma based on time"))
@@ -384,13 +368,16 @@ class Ui_MainWindow(object):
         self.label_8.setText(_translate("MainWindow", "subreddit name"))
         self.label_9.setText(_translate("MainWindow", "weekday"))
         self.label_10.setText(_translate("MainWindow", "time of day"))
+        self.commentsTimeEdit.setDisplayFormat(_translate("MainWindow", "HH:mm"))
         self.commentsCombineDaysCheckBox.setText(_translate("MainWindow", "combine days of week"))
         self.commentsTimeRawDataCheckBox.setText(_translate("MainWindow", "raw data"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.widget), _translate("MainWindow", "Comments based on time"))
         self.label_11.setText(_translate("MainWindow", "subreddit name"))
         self.label_12.setText(_translate("MainWindow", "weekday"))
         self.label_13.setText(_translate("MainWindow", "time of day"))
+        self.meanSentimentTimeEdit.setDisplayFormat(_translate("MainWindow", "HH:mm"))
         self.meanSentimentCombineDaysCheckBox.setText(_translate("MainWindow", "combine days of week"))
         self.meanSentimentRawDataCheckBox.setText(_translate("MainWindow", "raw data"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.meanSentimentsTab), _translate("MainWindow", "Mean sentiments"))
+
 

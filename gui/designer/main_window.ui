@@ -29,7 +29,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>5</number>
+         <number>2</number>
         </property>
         <property name="usesScrollButtons">
          <bool>true</bool>
@@ -217,7 +217,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QComboBox" name="timeSubNameComboBox"/>
+             <widget class="QComboBox" name="karmaTimeSubNameComboBox"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_2">
@@ -227,7 +227,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QComboBox" name="weekdayComboBox"/>
+             <widget class="QComboBox" name="karmaWeekdayComboBox"/>
             </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label_3">
@@ -237,14 +237,11 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout">
-              <item>
-               <widget class="QSpinBox" name="minuteSpinBox"/>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="hourSpinBox"/>
-              </item>
-             </layout>
+             <widget class="QTimeEdit" name="karmaTimeEdit">
+              <property name="displayFormat">
+               <string>HH:mm</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -476,14 +473,11 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <item>
-               <widget class="QSpinBox" name="commentsMinuteSpinBox"/>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="commentsHourSpinBox"/>
-              </item>
-             </layout>
+             <widget class="QTimeEdit" name="commentsTimeEdit">
+              <property name="displayFormat">
+               <string>HH:mm</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -601,14 +595,11 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
-              <item>
-               <widget class="QSpinBox" name="meanSentimentMinuteSpinBox"/>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="meanSentimentHourSpinBox"/>
-              </item>
-             </layout>
+             <widget class="QTimeEdit" name="meanSentimentTimeEdit">
+              <property name="displayFormat">
+               <string>HH:mm</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

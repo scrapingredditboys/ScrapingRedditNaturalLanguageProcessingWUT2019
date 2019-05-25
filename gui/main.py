@@ -1,6 +1,6 @@
-import sys
+#!/usr/bin/env python3
 
-from PyQt5 import QtCore
+import sys
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from gui_main_window import Ui_MainWindow
 
