@@ -50,7 +50,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.karmaWeekdayComboBox.addItem(day)
             self.meanSentimentWeekdayComboBox.addItem(day)
 
-        self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, "commentsTimeTab"))
+        self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, "meanSentimentsTab"))
 
         # karma based on length
         self.lengthSubNameComboBox.currentIndexChanged.connect(self.karma_length)
@@ -76,6 +76,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.commentsTimeRawDataCheckBox.stateChanged.connect(self.comments_time)
         self.commentsTimeCombineDaysCheckBox.stateChanged.connect(lambda: self.combine_days_changed("commentsTime"))
 
+        # mean sentiments of comments
+        self.meanSentimentSubNameComboBox.currentIndexChanged.connect(self.mean_sentiment)
+        self.meanSentimentWeekdayComboBox.currentIndexChanged.connect(self.mean_sentiment)
+        self.meanSentimentTimeEdit.timeChanged.connect(self.mean_sentiment)
+        self.meanSentimentRawDataCheckBox.stateChanged.connect(self.mean_sentiment)
+        self.meanSentimentCombineDaysCheckBox.stateChanged.connect(lambda: self.combine_days_changed("meanSentiment"))
+
     def scan_for_subreddits(self):
         with open(os.path.join(self.data_dir, self.classifiers_dir, "AverageWordUsageClassifier.csv")) as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
@@ -98,6 +105,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 self.commentsWeekdayComboBox.setEnabled(True)
             self.comments_time()
+        elif caller == "meanSentiment":
+            if self.meanSentimentCombineDaysCheckBox.isChecked():
+                self.meanSentimentWeekdayComboBox.setDisabled(True)
+            else:
+                self.meanSentimentWeekdayComboBox.setEnabled(True)
+            self.mean_sentiment()
 
     def karma_length(self):
         # karma based on length
@@ -175,13 +188,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if combine_days:
                     for row in list(reader)[lbound + 1:ubound + 1]:
                         total += float(row[self.subreddits.index(sub) + 1])
-                        print(total)
                         i += 1
                     result = total / i
                 else:
                     for row in list(reader)[weekday * 24 + lbound + 1:weekday * 24 + ubound + 1]:
                         total += float(row[self.subreddits.index(sub) + 2])
-                        print(total)
                         i += 1
                     result = total / i
             print("Result:", result)
@@ -236,12 +247,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         for i in range(7):
                             for row in list(reader)[lbound + 1:ubound + 1]:
                                 total += float(row[self.subreddits.index(sub) + 2])
-                                print(total)
                         result = total / (3*7)
                 else:
                     for row in list(reader)[weekday * 24 + lbound + 1:weekday * 24 + ubound + 1]:
                         total += float(row[self.subreddits.index(sub) + 2])
-                        print(total)
                     result = total / 3
             print("Result:", result)
             if raw:
@@ -303,6 +312,67 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                     ", and negative with: " + str(math.fabs(round(result_neg, 2)))
             result_label.setText(result_string)
             result_label.setEnabled(True)
+
+    def mean_sentiment(self):
+        # mean sentiments of comments
+        time = self.meanSentimentTimeEdit.time()
+        sub = self.meanSentimentSubNameComboBox.currentText()
+        combine_days = self.meanSentimentCombineDaysCheckBox.isChecked()
+        result_label = self.meanSentimentResultLabel
+        raw = self.meanSentimentRawDataCheckBox.isChecked()
+
+        path = os.path.join(self.data_dir, self.tables_dir, "mean_sentiments_of_comments_based_on_weekday_and_hour.csv")
+        if combine_days:
+            print("Calculating mean sentiments of comments for post at", time.toString("hap"), "on", sub, "...")
+        else:
+            weekday = self.meanSentimentWeekdayComboBox.currentIndex()
+            print("Calculating mean sentiments of comments for post at", time.toString("hap"), "on",
+                  self.meanSentimentWeekdayComboBox.currentText(), "on", sub, "...")
+        # performance: maybe keep it opened in memory
+        with open(path) as csvfile:
+            reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
+            if raw:
+                if combine_days:
+                    total = 0
+                    for i in range(0, 7):
+                        for _, row in enumerate(reader):
+                            if row[1] == time:
+                                total += int(row[self.subreddits.index(sub) + 2])
+                                break
+                    result = round(total/7)
+                else:
+                    result = next(itertools.islice(reader, weekday * 24 + time.hour() + 1,
+                                                   None))[self.subreddits.index(sub) + 2]
+            else:
+                total = 0
+                lbound = math.floor(time.hour() / 3) * 3
+                ubound = math.ceil((time.hour() + 1) / 3) * 3
+                if combine_days:
+                    for i in range(7):
+                        for row in list(reader)[lbound + 1:ubound + 1]:
+                            total += float(row[self.subreddits.index(sub) + 2])
+                    result = total / (3*7)
+                else:
+                    for row in list(reader)[weekday * 24 + lbound + 1:weekday * 24 + ubound + 1]:
+                        total += float(row[self.subreddits.index(sub) + 2])
+                    result = total / 3
+            print("Result:", result)
+            if raw:
+                result_string = str(result)
+            else:
+                if combine_days:
+                    result_string = "Posting at " + time.toString("hh:mm") + " on /r/" + sub
+                else:
+                    result_string = "Posting at " + time.toString("hh:mm") + " on " \
+                                    + self.karmaWeekdayComboBox.currentText() + " on /r/" + sub
+                result_string += " is very likely of "
+                if result >= 0:
+                    result_string += "positive"
+                else:
+                    result_string += "negative"
+                result_string += " sentiment."
+        result_label.setText(result_string)
+        result_label.setEnabled(True)
 
 
 if __name__ == '__main__':
