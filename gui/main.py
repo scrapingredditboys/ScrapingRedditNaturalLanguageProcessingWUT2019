@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import itertools
+import math
 import os
 import string
 import sys
@@ -94,7 +95,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if length > self.get_number_of_lines(path):
             self.lengthResultLabel.setText("NO COMMENTS OF LENGTH " + str(length) + " ON /r/" + sub)
             self.lengthResultLabel.setDisabled(True)
-            self.lengthRawDataCheckBox.setChecked(True)
             self.lengthRawDataCheckBox.setDisabled(True)
             return
 
@@ -103,15 +103,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #performance: maybe keep it opened in memory
         with open(path) as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
-            if self.lengthRawDataCheckBox.isChecked() or length > 49:
+            if self.lengthRawDataCheckBox.isChecked():
                 result = next(itertools.islice(reader, length, None))[self.subreddits.index(sub) + 1]
             else:
-                sum = 0
+                total = 0
                 i = 0
-                for row in list(reader)[1:49]:
-                    sum += float(row[self.subreddits.index(sub) + 1])
+                lbound = math.floor(length/50) * 50 + 1
+                ubound = math.ceil(length/50) * 50
+                print(lbound, ubound)
+                for row in list(reader)[lbound:ubound]:
+                    total += float(row[self.subreddits.index(sub) + 1])
                     i += 1
-                result = sum/i
+                result = total/i
 
             print("Result:", result)
             if self.lengthRawDataCheckBox.isChecked():
