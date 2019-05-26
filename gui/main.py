@@ -6,6 +6,8 @@ import string
 import sys
 import csv
 from enum import Enum
+
+import numpy as np
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget
 from gui_main_window import Ui_MainWindow
 
@@ -50,7 +52,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.karmaWeekdayComboBox.addItem(day)
             self.meanSentimentWeekdayComboBox.addItem(day)
 
-        self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, "meanSentimentsTab"))
+        self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, "subredditTab"))
+
+        # guessing sub based on given text
+        self.subredditGuessButton.clicked.connect(self.subreddit_guess)
 
         # karma based on length
         self.lengthSubNameComboBox.currentIndexChanged.connect(self.karma_length)
@@ -111,6 +116,55 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 self.meanSentimentWeekdayComboBox.setEnabled(True)
             self.mean_sentiment()
+
+    def subreddit_guess(self):
+        input = self.subredditGuessField.toPlainText()
+        result_label = self.subredditGuessResultLabel
+        path_sub = os.path.join(self.data_dir, self.classifiers_dir, "AverageWordUsageClassifier.csv")
+        path_emotion = os.path.join(self.data_dir, self.classifiers_dir, "EmotionsClassifier.csv")
+        path_topic = os.path.join(self.data_dir, self.classifiers_dir, "TopicsClassifier.csv")
+
+        scores = np.zeros(len(self.subreddits))
+
+        # performance: no need to update every time
+        # find all available words in the classifier
+        available_words = []
+        with open(path_sub) as csvfile:
+            reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
+            for row in list(reader)[1:]:
+                available_words.append(row[0])
+
+            # prepare words from input for processing
+            table = str.maketrans({key: None for key in string.punctuation})
+            input_stripped = input.translate(table)
+            words_cap = input_stripped.split(' ')
+            words = []
+            for word_cap in words_cap:
+                words.append(word_cap.lower())
+
+            words_set = set(words)
+            avail_set = set(available_words)
+            intersect = words_set.intersection(avail_set)
+
+        with open(path_sub) as csvfile:
+            reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
+            for word in intersect:
+                for row in list(reader)[0:]:
+                    if row[0] == word:
+                        scores = [float(x) + y for x, y in zip(row[1:], scores)]
+                        break
+
+        candidates = []
+        for i in range(3):
+            candidates.append((self.subreddits[scores.index(max(scores))], max(scores)))
+            scores[scores.index(max(scores))] = 0
+        result_string = ""
+        for pair in candidates:
+            result_string += "sub " + str(pair[0]) + ": " + str(pair[1]) + "\n"
+
+        result_label.setEnabled(True)
+        result_label.setText(result_string)
+
 
     def karma_length(self):
         # karma based on length
