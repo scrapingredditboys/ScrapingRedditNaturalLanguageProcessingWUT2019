@@ -50,6 +50,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.karmaWeekdayComboBox.addItem(day)
             self.meanSentimentWeekdayComboBox.addItem(day)
 
+        self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, "commentsTimeTab"))
+
         # karma based on length
         self.lengthSubNameComboBox.currentIndexChanged.connect(self.karma_length)
         self.lengthSpinBox.valueChanged.connect(self.karma_length)
@@ -67,7 +69,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.upvoteSpinBox.valueChanged.connect(self.sentiment_ratio)
         self.upvoteRawDataCheckBox.stateChanged.connect(self.sentiment_ratio)
 
-        self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, "upvoteTab"))
+        # comments based on time
+        self.commentsTimeSubNameComboBox.currentIndexChanged.connect(self.comments_time)
+        self.commentsWeekdayComboBox.currentIndexChanged.connect(self.comments_time)
+        self.commentsTimeEdit.timeChanged.connect(self.comments_time)
+        self.commentsTimeRawDataCheckBox.stateChanged.connect(self.comments_time)
+        self.commentsTimeCombineDaysCheckBox.stateChanged.connect(lambda: self.combine_days_changed("commentsTime"))
 
     def scan_for_subreddits(self):
         with open(os.path.join(self.data_dir, self.classifiers_dir, "AverageWordUsageClassifier.csv")) as csvfile:
@@ -85,6 +92,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 self.karmaWeekdayComboBox.setEnabled(True)
             self.karma_time()
+        elif caller == "commentsTime":
+            if self.commentsTimeCombineDaysCheckBox.isChecked():
+                self.commentsWeekdayComboBox.setDisabled(True)
+            else:
+                self.commentsWeekdayComboBox.setEnabled(True)
+            self.comments_time()
 
     def karma_length(self):
         # karma based on length
@@ -185,6 +198,65 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.karmaTimeResultLabel.setEnabled(True)
             self.karmaTimeResultLabel.setText(result_string)
 
+    def comments_time(self):
+        # comments based on time
+        time = self.commentsTimeEdit.time()
+        sub = self.commentsTimeSubNameComboBox.currentText()
+        combine_days = self.commentsTimeCombineDaysCheckBox.isChecked()
+        result_label = self.commentsTimeResultLabel
+
+        path = os.path.join(self.data_dir, self.tables_dir, "number_of_comments_based_on_weekday_and_hour.csv")
+        if combine_days:
+            print("Calculating # of comments for post at", time.toString("hap"), "on", sub, "...")
+        else:
+            weekday = self.commentsWeekdayComboBox.currentIndex()
+            print("Calculating # of comments for post at", time.toString("hap"), "on",
+                  self.commentsWeekdayComboBox.currentText(), "on", sub, "...")
+        # performance: maybe keep it opened in memory
+        with open(path) as csvfile:
+            reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
+            raw = self.commentsTimeRawDataCheckBox.isChecked()
+            if raw:
+                if combine_days:
+                    total = 0
+                    for i in range(0, 7):
+                        for _, row in enumerate(reader):
+                            if row[1] == time.toString("hap"):
+                                total += int(row[self.subreddits.index(sub) + 2])
+                                break
+                    result = round(total/7)
+                else:
+                    result = next(itertools.islice(reader, weekday * 24 + time.hour() + 1,
+                                                   None))[self.subreddits.index(sub) + 2]
+            else:
+                total = 0
+                lbound = math.floor(time.hour() / 3) * 3
+                ubound = math.ceil((time.hour() + 1) / 3) * 3
+                if combine_days:
+                        for i in range(7):
+                            for row in list(reader)[lbound + 1:ubound + 1]:
+                                total += float(row[self.subreddits.index(sub) + 2])
+                                print(total)
+                        result = total / (3*7)
+                else:
+                    for row in list(reader)[weekday * 24 + lbound + 1:weekday * 24 + ubound + 1]:
+                        total += float(row[self.subreddits.index(sub) + 2])
+                        print(total)
+                    result = total / 3
+            print("Result:", result)
+            if raw:
+                result_string = str(result)
+            else:
+                if combine_days:
+                    result_string = "Posting at " + time.toString("hh:mm") + " on /r/" + sub + " results in " \
+                                    + str(round(result)) + " comments on average"
+                else:
+                    result_string = "Posting at " + time.toString("hh:mm") + " on " \
+                                    + self.karmaWeekdayComboBox.currentText() + " on /r/" + sub + " results in " \
+                                    + str(round(result)) + " comments on average"
+        result_label.setText(result_string)
+        result_label.setEnabled(True)
+
     def sentiment_ratio(self):
         raw = self.upvoteRawDataCheckBox.isChecked()
         ratio = self.upvoteSpinBox.value()
@@ -230,6 +302,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                     + "positive sentiment with probability: " + str(math.fabs(round(result_pos, 2))) + \
                                     ", and negative with: " + str(math.fabs(round(result_neg, 2)))
             result_label.setText(result_string)
+            result_label.setEnabled(True)
 
 
 if __name__ == '__main__':

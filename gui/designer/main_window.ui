@@ -29,7 +29,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>4</number>
         </property>
         <property name="usesScrollButtons">
          <bool>true</bool>
@@ -430,7 +430,7 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="widget">
+        <widget class="QWidget" name="commentsTimeTab">
          <attribute name="title">
           <string>Comments based on time</string>
          </attribute>
@@ -508,7 +508,7 @@
                <number>10</number>
               </property>
               <item>
-               <widget class="QCheckBox" name="commentsCombineDaysCheckBox">
+               <widget class="QCheckBox" name="commentsTimeCombineDaysCheckBox">
                 <property name="text">
                  <string>combine days of week</string>
                 </property>
