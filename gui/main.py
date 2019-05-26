@@ -69,7 +69,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def get_number_of_lines(self, path):
         with open(path) as file:
-            return sum(1 for line in file)
+            return sum(1 for line in file) - 1
 
     def combine_days_changed(self, caller):
         if caller == "karmaTime":
@@ -81,18 +81,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def karma_length(self):
-        path = os.path.join(self.data_dir, self.tables_dir, "karma_of_comments_based_on_comment_length.csv")
-        #TODO: performance: maybe move it somewhere else
-        self.lengthSpinBox.setMaximum(self.get_number_of_lines(path))
         # karma based on length
+        path = os.path.join(self.data_dir, self.tables_dir, "karma_of_comments_based_on_comment_length.csv")
         length = self.lengthSpinBox.value()
         sub = self.lengthSubNameComboBox.currentText()
+
         if length == 0:
             self.lengthResultLabel.setText("")
             self.lengthResultLabel.setDisabled(True)
             return
+        #performance: save the max value for later
+        if length > self.get_number_of_lines(path):
+            self.lengthResultLabel.setText("NO COMMENTS OF LENGTH " + str(length) + " ON /r/" + sub)
+            self.lengthResultLabel.setDisabled(True)
+            self.lengthRawDataCheckBox.setChecked(True)
+            self.lengthRawDataCheckBox.setDisabled(True)
+            return
+
+        self.lengthRawDataCheckBox.setEnabled(True)
         print("Calculating karma for post of length", length, "on", sub, "...")
-        #TODO: performance: maybe keep it opened in memory
+        #performance: maybe keep it opened in memory
         with open(path) as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             if self.lengthRawDataCheckBox.isChecked() or length > 49:
@@ -107,7 +115,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             print("Result:", result)
             if self.lengthRawDataCheckBox.isChecked():
-                result_string = str(result)
+                if float(result) < 0.00001:
+                    result_string = " LENGTH " + str(length) + " NOT FOUND"
+                else:
+                    result_string = str(result)
             else:
                 result_string = "A post of length " + str(length) + " on /r/" + sub + " gains " \
                                 + str(result) + " karma on average"
@@ -127,7 +138,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             weekday = self.karmaWeekdayComboBox.currentIndex()
             print("Calculating karma for post at", time.toString("hap"), "on", self.karmaWeekdayComboBox.currentText(),
                   "on", sub, "...")
-        #TODO: performance: maybe keep it opened in memory
+        #performance: maybe keep it opened in memory
         with open(path) as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             if combine_days:

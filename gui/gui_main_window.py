@@ -66,6 +66,7 @@ class Ui_MainWindow(object):
         self.label_4.setObjectName("label_4")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_4)
         self.lengthSpinBox = QtWidgets.QSpinBox(self.lengthTab)
+        self.lengthSpinBox.setMaximum(999999)
         self.lengthSpinBox.setObjectName("lengthSpinBox")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.lengthSpinBox)
         self.lengthSubNameComboBox = QtWidgets.QComboBox(self.lengthTab)
@@ -342,7 +343,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
