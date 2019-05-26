@@ -9,7 +9,8 @@ from enum import Enum
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget
 from gui_main_window import Ui_MainWindow
 
-#TODO: result text size
+
+# TODO: result text size
 
 class DaysOfWeek(Enum):
     MONDAY = 0
@@ -80,7 +81,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.karmaWeekdayComboBox.setEnabled(True)
             self.karma_time()
 
-
     def karma_length(self):
         # karma based on length
         path = os.path.join(self.data_dir, self.tables_dir, "karma_of_comments_based_on_comment_length.csv")
@@ -91,7 +91,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.lengthResultLabel.setText("")
             self.lengthResultLabel.setDisabled(True)
             return
-        #performance: save the max value for later
+        # performance: save the max value for later
         if length > self.get_number_of_lines(path):
             self.lengthResultLabel.setText("NO COMMENTS OF LENGTH " + str(length) + " ON /r/" + sub)
             self.lengthResultLabel.setDisabled(True)
@@ -100,7 +100,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.lengthRawDataCheckBox.setEnabled(True)
         print("Calculating karma for post of length", length, "on", sub, "...")
-        #performance: maybe keep it opened in memory
+        # performance: maybe keep it opened in memory
         with open(path) as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             if self.lengthRawDataCheckBox.isChecked():
@@ -108,13 +108,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 total = 0
                 i = 0
-                lbound = math.floor(length/50) * 50 + 1
-                ubound = math.ceil(length/50) * 50
+                lbound = math.floor(length / 50) * 50 + 1
+                ubound = math.ceil(length / 50) * 50
                 print(lbound, ubound)
                 for row in list(reader)[lbound:ubound]:
                     total += float(row[self.subreddits.index(sub) + 1])
                     i += 1
-                result = total/i
+                result = total / i
 
             print("Result:", result)
             if self.lengthRawDataCheckBox.isChecked():
@@ -141,25 +141,44 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             weekday = self.karmaWeekdayComboBox.currentIndex()
             print("Calculating karma for post at", time.toString("hap"), "on", self.karmaWeekdayComboBox.currentText(),
                   "on", sub, "...")
-        #performance: maybe keep it opened in memory
+        # performance: maybe keep it opened in memory
         with open(path) as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
-            if combine_days:
-                result = next(itertools.islice(reader, time.hour() + 1, None))[self.subreddits.index(sub) + 1]
+            raw = self.karmaTimeRawDataCheckBox.isChecked()
+            if raw:
+                if combine_days:
+                    result = next(itertools.islice(reader, time.hour() + 1, None))[self.subreddits.index(sub) + 1]
+                else:
+                    result = next(itertools.islice(reader, weekday * 24 + time.hour() + 1,
+                                                   None))[self.subreddits.index(sub) + 2]
             else:
-                result = next(itertools.islice(reader, weekday * 24 + time.hour() + 1,
-                                               None))[self.subreddits.index(sub) + 2]
+                total = 0
+                i = 0
+                lbound = math.floor(time.hour() / 3) * 3
+                ubound = math.ceil((time.hour() + 1) / 3) * 3
+                if combine_days:
+                    for row in list(reader)[lbound + 1:ubound + 1]:
+                        total += float(row[self.subreddits.index(sub) + 1])
+                        print(total)
+                        i += 1
+                    result = total / i
+                else:
+                    for row in list(reader)[weekday * 24 + lbound + 1:weekday * 24 + ubound + 1]:
+                        total += float(row[self.subreddits.index(sub) + 2])
+                        print(total)
+                        i += 1
+                    result = total / i
             print("Result:", result)
-            if self.karmaTimeRawDataCheckBox.isChecked():
+            if raw:
                 result_string = str(result)
             else:
                 if combine_days:
                     result_string = "Posting at " + time.toString("hh:mm") + " on /r/" + sub + " results in " \
-                                    + str(result) + " karma on average"
+                                    + str(round(result)) + " karma on average"
                 else:
                     result_string = "Posting at " + time.toString("hh:mm") + " on " \
                                     + self.karmaWeekdayComboBox.currentText() + " on /r/" + sub + " results in " \
-                                    + str(result) + " karma on average"
+                                    + str(round(result)) + " karma on average"
             self.karmaTimeResultLabel.setEnabled(True)
             self.karmaTimeResultLabel.setText(result_string)
 
