@@ -194,6 +194,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for pair in candidates:
             result_string += "emotion " + str(pair[0]) + ": " + str(pair[1]) + "\n"
 
+
+        # TOPIC GUESSING
+        topic_words_topics = []
+        with open(path_topic) as csvfile:
+            reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
+            for row in list(reader)[1:]:
+                if row[1] != "adjectives" and row[1] != "adverbs":
+                    topic_words_topics.append((row[0], row[2]))
+
+        # performance: definitely can be improved here
+        topic_scores = {}
+        for word in words_set:
+            for word_topic in topic_words_topics:
+                if word == word_topic[0]:
+                    if word_topic[1] in topic_scores:
+                        topic_scores[word_topic[1]] += 1
+                    else:
+                        topic_scores[word_topic[1]] = 0
+
+        topic_scores = sorted(topic_scores.items(), key=lambda x: x[1], reverse=True)
+        for i in range(3):
+            result_string += "topic " + topic_scores[i][0] + ": " + str(topic_scores[i][1]) + "\n"
+
         result_label.setEnabled(True)
         result_label.setText(result_string)
 
