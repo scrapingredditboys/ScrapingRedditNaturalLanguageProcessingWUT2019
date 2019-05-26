@@ -125,7 +125,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         path_topic = os.path.join(self.data_dir, self.classifiers_dir, "TopicsClassifier.csv")
 
         scores = np.zeros(len(self.subreddits))
+        # prepare words from input for processing
+        table = str.maketrans({key: None for key in string.punctuation})
+        input_stripped = input.translate(table)
+        words_cap = input_stripped.split(' ')
+        words = []
+        for word_cap in words_cap:
+            words.append(word_cap.lower())
 
+        words_set = set(words)
+
+        # SUBREDDIT GUESSING
         # performance: no need to update every time
         # find all available words in the classifier
         available_words = []
@@ -134,15 +144,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for row in list(reader)[1:]:
                 available_words.append(row[0])
 
-            # prepare words from input for processing
-            table = str.maketrans({key: None for key in string.punctuation})
-            input_stripped = input.translate(table)
-            words_cap = input_stripped.split(' ')
-            words = []
-            for word_cap in words_cap:
-                words.append(word_cap.lower())
-
-            words_set = set(words)
             avail_set = set(available_words)
             intersect = words_set.intersection(avail_set)
 
@@ -161,6 +162,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         result_string = ""
         for pair in candidates:
             result_string += "sub " + str(pair[0]) + ": " + str(pair[1]) + "\n"
+
+        # EMOTION GUESSING
+        # find all available emotions in the classifier
+        with open(path_emotion) as csvfile:
+            reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
+            available_emotions = next(reader)[1:]
+
+            # find all available words in the classifier
+            emotion_available_words = []
+            reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
+            for row in list(reader)[1:]:
+                emotion_available_words.append(row[0])
+
+            emotion_avail_set = set(emotion_available_words)
+            emotion_intersect = words_set.intersection(emotion_avail_set)
+
+        emotion_scores = [0] * len(available_emotions)
+        with open(path_emotion) as csvfile:
+            reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
+            for word in emotion_intersect:
+                for row in list(reader)[0:]:
+                    if row[0] == word:
+                        emotion_scores = [float(x) + y for x, y in zip(row[1:], emotion_scores)]
+                        break
+
+        candidates = []
+        for i in range(3):
+            candidates.append((available_emotions[emotion_scores.index(max(emotion_scores))], max(emotion_scores)))
+            emotion_scores[emotion_scores.index(max(emotion_scores))] = 0
+        for pair in candidates:
+            result_string += "emotion " + str(pair[0]) + ": " + str(pair[1]) + "\n"
 
         result_label.setEnabled(True)
         result_label.setText(result_string)
