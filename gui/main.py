@@ -62,7 +62,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.karmaTimeRawDataCheckBox.stateChanged.connect(self.karma_time)
         self.karmaTimeCombineDaysCheckBox.stateChanged.connect(lambda: self.combine_days_changed("karmaTime"))
 
-        self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, "timeTab"))
+        # sentiment based on upvote ratio
+        self.upvoteSubNameComboBox.currentIndexChanged.connect(self.sentiment_ratio)
+        self.upvoteSpinBox.valueChanged.connect(self.sentiment_ratio)
+        self.upvoteRawDataCheckBox.stateChanged.connect(self.sentiment_ratio)
+
+        self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, "upvoteTab"))
 
     def scan_for_subreddits(self):
         with open(os.path.join(self.data_dir, self.classifiers_dir, "AverageWordUsageClassifier.csv")) as csvfile:
@@ -95,10 +100,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if length > self.get_number_of_lines(path):
             self.lengthResultLabel.setText("NO COMMENTS OF LENGTH " + str(length) + " ON /r/" + sub)
             self.lengthResultLabel.setDisabled(True)
-            self.lengthRawDataCheckBox.setDisabled(True)
             return
 
-        self.lengthRawDataCheckBox.setEnabled(True)
         print("Calculating karma for post of length", length, "on", sub, "...")
         # performance: maybe keep it opened in memory
         with open(path) as csvfile:
@@ -181,6 +184,52 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                     + str(round(result)) + " karma on average"
             self.karmaTimeResultLabel.setEnabled(True)
             self.karmaTimeResultLabel.setText(result_string)
+
+    def sentiment_ratio(self):
+        raw = self.upvoteRawDataCheckBox.isChecked()
+        ratio = self.upvoteSpinBox.value()
+        if ratio < 62:
+            ratio_index = ratio - 59
+        else:
+            if ratio == 62:
+                ratio_index = 4 # because there's no ratio 0.62 in tables...
+            ratio_index = ratio - 60
+        sub = self.upvoteSubNameComboBox.currentText()
+        result_label = self.upvoteResultLabel
+        path_pos = os.path.join(self.data_dir, self.tables_dir,
+                               "positive_sentiments_of_submissions_based_on_upvote_ratio.csv")
+        path_neg = os.path.join(self.data_dir, self.tables_dir,
+                               "negative_sentiments_of_submissions_based_on_upvote_ratio.csv")
+        with open(path_pos) as csvfile_pos, open(path_neg) as csvfile_neg:
+            reader_pos = csv.reader(csvfile_pos, delimiter=self.csv_delimiter)
+            reader_neg = csv.reader(csvfile_neg, delimiter=self.csv_delimiter)
+            if raw:
+                result_pos = next(itertools.islice(reader_pos, ratio_index, None))[self.subreddits.index(sub) + 1]
+                result_neg = next(itertools.islice(reader_neg, ratio_index, None))[self.subreddits.index(sub) + 1]
+                print(result_neg, result_pos)
+            else:
+                total_pos = 0
+                total_neg = 0
+                lbound = math.floor(ratio_index / 3) * 3 + 1
+                ubound = math.ceil((ratio_index + 1) / 3) * 3 + 1
+                for row in list(reader_pos)[lbound:ubound]:
+                    total_pos += float(row[self.subreddits.index(sub) + 1])
+                for row in list(reader_neg)[lbound:ubound]:
+                    total_neg += float(row[self.subreddits.index(sub) + 1])
+                result_pos = total_pos / 3
+                result_neg = total_neg / 3
+
+            print("Result: pos ", result_pos, " neg: ", result_neg)
+            if math.fabs(float(result_pos)) < 0.00001 and abs(float(result_neg)) < 0.00001:
+                result_string = "DATA NOT AVAILABLE"
+            else:
+                if raw:
+                    result_string = "positive: " + str(result_pos) + " negative: " + str(result_neg)
+                else:
+                    result_string = "A post with upvote ratio " + str(ratio) + "% on /r/" + sub + " is likely to have " \
+                                    + "positive sentiment with probability: " + str(math.fabs(round(result_pos, 2))) + \
+                                    ", and negative with: " + str(math.fabs(round(result_neg, 2)))
+            result_label.setText(result_string)
 
 
 if __name__ == '__main__':
