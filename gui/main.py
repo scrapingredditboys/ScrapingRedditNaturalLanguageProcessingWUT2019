@@ -168,6 +168,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             result_string += "sub " + str(pair[0]) + ": " + str(pair[1]) + "\n"
 
         # EMOTION GUESSING
+        #TODO: more likely, less likely
         # find all available emotions in the classifier
         with open(path_emotion, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
@@ -273,7 +274,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     result_string = str(result)
             else:
                 result_string = "A post of length " + str(length) + " on /r/" + sub + " gains " \
-                                + str(result) + " karma on average"
+                                + str(round(result, self.output_round)) + " karma on average"
             self.lengthResultLabel.setEnabled(True)
             self.lengthResultLabel.setText(result_string)
 
