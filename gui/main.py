@@ -88,12 +88,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.meanSentimentCombineDaysCheckBox.stateChanged.connect(lambda: self.combine_days_changed("meanSentiment"))
 
     def scan_for_subreddits(self):
-        with open(os.path.join(self.data_dir, self.classifiers_dir, "AverageWordUsageClassifier.csv")) as csvfile:
+        with open(os.path.join(self.data_dir, self.classifiers_dir, "AverageWordUsageClassifier.csv"), encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             return next(reader)[1:]
 
     def get_number_of_lines(self, path):
-        with open(path) as file:
+        with open(path, encoding="utf-8") as file:
             return sum(1 for line in file) - 1
 
     def combine_days_changed(self, caller):
@@ -123,7 +123,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         path_emotion = os.path.join(self.data_dir, self.classifiers_dir, "EmotionsClassifier.csv")
         path_topic = os.path.join(self.data_dir, self.classifiers_dir, "TopicsClassifier.csv")
 
-        scores = np.zeros(len(self.subreddits))
+        scores = [0] * len(self.subreddits)
         # prepare words from input for processing
         table = str.maketrans({key: None for key in string.punctuation})
         input_stripped = input.translate(table)
@@ -138,7 +138,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # performance: no need to update every time
         # find all available words in the classifier
         available_words = []
-        with open(path_sub) as csvfile:
+        with open(path_sub, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             for row in list(reader)[1:]:
                 available_words.append(row[0])
@@ -146,7 +146,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             avail_set = set(available_words)
             intersect = words_set.intersection(avail_set)
 
-        with open(path_sub) as csvfile:
+        with open(path_sub, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             for word in intersect:
                 for row in list(reader)[0:]:
@@ -164,7 +164,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # EMOTION GUESSING
         # find all available emotions in the classifier
-        with open(path_emotion) as csvfile:
+        with open(path_emotion, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             available_emotions = next(reader)[1:]
 
@@ -178,7 +178,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             emotion_intersect = words_set.intersection(emotion_avail_set)
 
         emotion_scores = [0] * len(available_emotions)
-        with open(path_emotion) as csvfile:
+        with open(path_emotion, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             for word in emotion_intersect:
                 for row in list(reader)[0:]:
@@ -196,7 +196,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # TOPIC GUESSING
         topic_words_topics = []
-        with open(path_topic) as csvfile:
+        with open(path_topic, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             for row in list(reader)[1:]:
                 if row[1] != "adjectives" and row[1] != "adverbs":
@@ -238,7 +238,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         print("Calculating karma for post of length", length, "on", sub, "...")
         # performance: maybe keep it opened in memory
-        with open(path) as csvfile:
+        with open(path, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             if self.lengthRawDataCheckBox.isChecked():
                 result = next(itertools.islice(reader, length, None))[self.subreddits.index(sub) + 1]
@@ -279,7 +279,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("Calculating karma for post at", time.toString("hap"), "on", self.karmaWeekdayComboBox.currentText(),
                   "on", sub, "...")
         # performance: maybe keep it opened in memory
-        with open(path) as csvfile:
+        with open(path, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             raw = self.karmaTimeRawDataCheckBox.isChecked()
             if raw:
@@ -332,7 +332,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("Calculating # of comments for post at", time.toString("hap"), "on",
                   self.commentsWeekdayComboBox.currentText(), "on", sub, "...")
         # performance: maybe keep it opened in memory
-        with open(path) as csvfile:
+        with open(path, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             raw = self.commentsTimeRawDataCheckBox.isChecked()
             if raw:
@@ -389,7 +389,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                "positive_sentiments_of_submissions_based_on_upvote_ratio.csv")
         path_neg = os.path.join(self.data_dir, self.tables_dir,
                                "negative_sentiments_of_submissions_based_on_upvote_ratio.csv")
-        with open(path_pos) as csvfile_pos, open(path_neg) as csvfile_neg:
+        with open(path_pos, encoding="utf-8") as csvfile_pos, open(path_neg, encoding="utf-8") as csvfile_neg:
             reader_pos = csv.reader(csvfile_pos, delimiter=self.csv_delimiter)
             reader_neg = csv.reader(csvfile_neg, delimiter=self.csv_delimiter)
             if raw:
@@ -437,7 +437,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("Calculating mean sentiments of comments for post at", time.toString("hap"), "on",
                   self.meanSentimentWeekdayComboBox.currentText(), "on", sub, "...")
         # performance: maybe keep it opened in memory
-        with open(path) as csvfile:
+        with open(path, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             if raw:
                 if combine_days:
