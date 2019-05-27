@@ -14,7 +14,6 @@ from gui_main_window import Ui_MainWindow
 # TODO: UnicodeDecodeError: 'charmap' codec can't decode byte X encoding="utf8")
 # TODO: Mean sentiments ma za wysoki próg "very likely" do positive i negative sentimentu
 # TODO: Mean sentiment ma odwrócone wartości, minusy to pozytywne, plusy to negatywne
-# TODO: Mean sentiments zwraca zerowe raw data
 
 class DaysOfWeek(Enum):
     MONDAY = 0
@@ -444,13 +443,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             if raw:
                 if combine_days:
-                    total = 0
+                    total = 0.0
                     for i in range(0, 7):
                         for _, row in enumerate(reader):
-                            if row[1] == time:
-                                total += int(row[self.subreddits.index(sub) + 2])
+                            if row[1] == str(time.hour()):
+                                total += float(row[self.subreddits.index(sub) + 2])
                                 break
-                    result = round(total/7)
+                    result = round(total/7, 6)
                 else:
                     result = next(itertools.islice(reader, weekday * 24 + time.hour() + 1,
                                                    None))[self.subreddits.index(sub) + 2]
