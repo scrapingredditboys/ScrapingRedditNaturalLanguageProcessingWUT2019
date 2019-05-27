@@ -11,8 +11,11 @@ import numpy as np
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget
 from gui_main_window import Ui_MainWindow
 
-
-# TODO: result text size
+# TODO: - UnicodeDecodeError: 'charmap' codec can't decode byte X encoding="utf8")
+# TODO:  Karma based on Length crashuje na i % 50 = 0
+# TODO:  Mean sentiments ma za wysoki próg "very likely" do positive i negative sentimentu
+# TODO:  Mean sentiment ma odwrócone wartości, minusy to pozytywne, plusy to negatywne
+# TODO:  Mean sentiments zwraca zerowe raw data
 
 class DaysOfWeek(Enum):
     MONDAY = 0
@@ -245,14 +248,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 result = next(itertools.islice(reader, length, None))[self.subreddits.index(sub) + 1]
             else:
                 total = 0
-                i = 0
                 lbound = math.floor(length / 50) * 50 + 1
                 ubound = math.ceil(length / 50) * 50
                 print(lbound, ubound)
                 for row in list(reader)[lbound:ubound]:
                     total += float(row[self.subreddits.index(sub) + 1])
-                    i += 1
-                result = total / i
+                result = total / 50
 
             print("Result:", result)
             if self.lengthRawDataCheckBox.isChecked():
