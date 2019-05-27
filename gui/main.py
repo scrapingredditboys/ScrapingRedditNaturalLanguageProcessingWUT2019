@@ -27,6 +27,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     classifiers_dir = "classifiers"
     tables_dir = "data_tables"
     csv_delimiter = ','
+    output_round = 3
     subreddits = []
 
     def __init__(self):
@@ -319,11 +320,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 if combine_days:
                     result_string = "Posting at " + time.toString("hh:mm") + " on /r/" + sub + " results in " \
-                                    + str(round(result)) + " karma on average"
+                                    + str(round(result, self.output_round)) + " karma on average"
                 else:
                     result_string = "Posting at " + time.toString("hh:mm") + " on " \
                                     + self.karmaWeekdayComboBox.currentText() + " on /r/" + sub + " results in " \
-                                    + str(round(result)) + " karma on average"
+                                    + str(round(result, self.output_round)) + " karma on average"
             self.karmaTimeResultLabel.setEnabled(True)
             self.karmaTimeResultLabel.setText(result_string)
 
@@ -353,7 +354,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             if row[1] == time.toString("hap"):
                                 total += int(row[self.subreddits.index(sub) + 2])
                                 break
-                    result = round(total/7)
+                    result = round(total/7, self.output_round)
                 else:
                     result = next(itertools.islice(reader, weekday * 24 + time.hour() + 1,
                                                    None))[self.subreddits.index(sub) + 2]
@@ -376,11 +377,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 if combine_days:
                     result_string = "Posting at " + time.toString("hh:mm") + " on /r/" + sub + " results in " \
-                                    + str(round(result)) + " comments on average"
+                                    + str(round(result, self.output_round)) + " comments on average"
                 else:
                     result_string = "Posting at " + time.toString("hh:mm") + " on " \
                                     + self.karmaWeekdayComboBox.currentText() + " on /r/" + sub + " results in " \
-                                    + str(round(result)) + " comments on average"
+                                    + str(round(result, self.output_round)) + " comments on average"
         result_label.setText(result_string)
         result_label.setEnabled(True)
 
@@ -426,8 +427,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     result_string = "positive: " + str(result_pos) + " negative: " + str(result_neg)
                 else:
                     result_string = "A post with upvote ratio " + str(ratio) + "% on /r/" + sub + " is likely to have " \
-                                    + "positive sentiment with probability: " + str(math.fabs(round(result_pos, 2))) + \
-                                    ", and negative with: " + str(math.fabs(round(result_neg, 2)))
+                                    + "positive sentiment with probability: " + str(math.fabs(round(result_pos, self.output_round))) + \
+                                    ", and negative with: " + str(math.fabs(round(result_neg, self.output_round)))
             result_label.setText(result_string)
             result_label.setEnabled(True)
 
@@ -457,7 +458,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             if row[1] == str(time.hour()):
                                 total += float(row[self.subreddits.index(sub) + 2])
                                 break
-                    result = round(total/7, 6)
+                    result = round(total/7, self.output_round)
                 else:
                     result = next(itertools.islice(reader, weekday * 24 + time.hour() + 1,
                                                    None))[self.subreddits.index(sub) + 2]
