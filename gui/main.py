@@ -23,6 +23,7 @@ class DaysOfWeek(Enum):
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     data_dir = "data"
+    res_dir = "resources"
     classifiers_dir = "classifiers"
     tables_dir = "data_tables"
     csv_delimiter = ','
@@ -32,6 +33,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__()
         self.setupUi(self)
         self.setWindowTitle("REDDIT CALCULATOR xD")
+        self.setWindowIcon(os.path.join(self.res_dir, "icon.png"))
 
         # populate comboboxes with subreddits
         self.subreddits = self.scan_for_subreddits()
@@ -115,12 +117,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.mean_sentiment()
 
     def subreddit_guess(self):
+        not_available = False
         input = self.subredditGuessField.toPlainText()
         result_label = self.subredditGuessResultLabel
         path_sub = os.path.join(self.data_dir, self.classifiers_dir, "AverageWordUsageClassifier.csv")
         path_emotion = os.path.join(self.data_dir, self.classifiers_dir, "EmotionsClassifier.csv")
         path_topic = os.path.join(self.data_dir, self.classifiers_dir, "TopicsClassifier.csv")
-        not_available = False
 
         scores = [0] * len(self.subreddits)
         # prepare words from input for processing
@@ -144,7 +146,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             avail_set = set(available_words)
             intersect = words_set.intersection(avail_set)
-            if len(intersect) == 0:
+            if len(intersect) < 3:
                 not_available = True
 
         with open(path_sub, encoding="utf-8") as csvfile:
