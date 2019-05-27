@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
+import csv
 import itertools
 import math
 import os
 import string
 import sys
-import csv
 from enum import Enum
 
-import numpy as np
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget
 from gui_main_window import Ui_MainWindow
 
-# TODO: UnicodeDecodeError: 'charmap' codec can't decode byte X encoding="utf8")
 
 class DaysOfWeek(Enum):
     MONDAY = 0
