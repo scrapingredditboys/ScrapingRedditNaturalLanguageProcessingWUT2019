@@ -7,6 +7,7 @@ import string
 import sys
 from enum import Enum
 
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget
 from gui_main_window import Ui_MainWindow
 
@@ -34,7 +35,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__()
         self.setupUi(self)
         self.setWindowTitle("REDDIT CALCULATOR xD")
-        self.setWindowIcon(os.path.join(self.res_dir, "icon.png"))
+        self.setWindowIcon(QIcon(os.path.join(self.res_dir, "icon.png")))
 
         # populate comboboxes with subreddits
         self.subreddits = self.scan_for_subreddits()
