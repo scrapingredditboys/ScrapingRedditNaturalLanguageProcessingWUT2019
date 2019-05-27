@@ -120,6 +120,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         path_sub = os.path.join(self.data_dir, self.classifiers_dir, "AverageWordUsageClassifier.csv")
         path_emotion = os.path.join(self.data_dir, self.classifiers_dir, "EmotionsClassifier.csv")
         path_topic = os.path.join(self.data_dir, self.classifiers_dir, "TopicsClassifier.csv")
+        not_available = False
 
         scores = [0] * len(self.subreddits)
         # prepare words from input for processing
@@ -143,6 +144,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             avail_set = set(available_words)
             intersect = words_set.intersection(avail_set)
+            if len(intersect) == 0:
+                not_available = True
 
         with open(path_sub, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
@@ -184,6 +187,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         emotion_scores = [float(x) + y for x, y in zip(row[1:], emotion_scores)]
                         break
 
+        if max(emotion_scores) == 0:
+            not_available = True
+
         candidates = []
         for i in range(3):
             candidates.append((available_emotions[emotion_scores.index(max(emotion_scores))], max(emotion_scores)))
@@ -211,11 +217,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         topic_scores[word_topic[1]] = 0
 
         topic_scores = sorted(topic_scores.items(), key=lambda x: x[1], reverse=True)
-        for i in range(3):
-            result_string += "topic " + topic_scores[i][0] + ": " + str(topic_scores[i][1]) + "\n"
+        if len(topic_scores) != 0:
+            for i in range(3):
+                result_string += "topic " + topic_scores[i][0] + ": " + str(topic_scores[i][1]) + "\n"
 
         result_label.setEnabled(True)
-        result_label.setText(result_string)
+        if not_available:
+            result_label.setText("DATA NOT AVAILABLE")
+        else:
+            result_label.setText(result_string)
 
 
     def karma_length(self):
