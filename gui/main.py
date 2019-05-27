@@ -12,8 +12,6 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget
 from gui_main_window import Ui_MainWindow
 
 # TODO: UnicodeDecodeError: 'charmap' codec can't decode byte X encoding="utf8")
-# TODO: Mean sentiments ma za wysoki próg "very likely" do positive i negative sentimentu
-# TODO: Mean sentiment ma odwrócone wartości, minusy to pozytywne, plusy to negatywne
 
 class DaysOfWeek(Enum):
     MONDAY = 0
@@ -475,11 +473,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 else:
                     result_string = "Posting at " + time.toString("hh:mm") + " on " \
                                     + self.karmaWeekdayComboBox.currentText() + " on /r/" + sub
-                result_string += " is very likely of "
-                if result >= 0:
-                    result_string += "positive"
+                result_string += " is "
+                if abs(result) > 0.5:
+                    result_string += "very"
                 else:
+                    result_string += "quite"
+                result_string += " likely to have "
+                if result >= 0:
                     result_string += "negative"
+                else:
+                    result_string += "positive"
                 result_string += " sentiment."
         result_label.setText(result_string)
         result_label.setEnabled(True)
