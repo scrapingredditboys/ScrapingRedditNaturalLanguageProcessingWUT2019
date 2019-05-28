@@ -11,7 +11,6 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget
 from gui_main_window import Ui_MainWindow
 
-
 class DaysOfWeek(Enum):
     MONDAY = 0
     TUESDAY = 1
@@ -56,7 +55,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, "subredditTab"))
 
         # guessing sub based on given text
-        self.subredditGuessButton.clicked.connect(self.subreddit_guess)
+        self.subredditGuessButtonR.clicked.connect(self.subreddit_guess)
+        self.subredditGuessButtonL.setVisible(False)
+        self.subredditGuessResultLabel_2.setVisible(False)
+        self.subredditGuessResultLabel_3.setVisible(False)
+        self.subredditGuessButtonL.clicked.connect(self.subreddit_guess_details)
 
         # karma based on length
         self.lengthSubNameComboBox.currentIndexChanged.connect(self.karma_length)
@@ -90,7 +93,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.meanSentimentCombineDaysCheckBox.stateChanged.connect(lambda: self.combine_days_changed("meanSentiment"))
 
     def scan_for_subreddits(self):
-        with open(os.path.join(self.data_dir, self.classifiers_dir, "AverageWordUsageClassifier.csv"), encoding="utf-8") as csvfile:
+        with open(os.path.join(self.data_dir, self.classifiers_dir, "AverageWordUsageClassifier.csv"),
+                  encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             return next(reader)[1:]
 
@@ -119,12 +123,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.mean_sentiment()
 
     def subreddit_guess(self):
-        not_available = False
+        sub_not_available = False
+        emotion_not_available = False
+        topic_not_available = False
         input = self.subredditGuessField.toPlainText()
         result_label = self.subredditGuessResultLabel
         path_sub = os.path.join(self.data_dir, self.classifiers_dir, "AverageWordUsageClassifier.csv")
         path_emotion = os.path.join(self.data_dir, self.classifiers_dir, "EmotionsClassifier.csv")
         path_topic = os.path.join(self.data_dir, self.classifiers_dir, "TopicsClassifier.csv")
+        results = []
 
         scores = [0] * len(self.subreddits)
         # prepare words from input for processing
@@ -149,7 +156,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             avail_set = set(available_words)
             intersect = words_set.intersection(avail_set)
             if len(intersect) < 3:
-                not_available = True
+                sub_not_available = True
 
         with open(path_sub, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
@@ -163,12 +170,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for i in range(3):
             candidates.append((self.subreddits[scores.index(max(scores))], max(scores)))
             scores[scores.index(max(scores))] = 0
-        result_string = ""
+        l = []
         for pair in candidates:
-            result_string += "sub " + str(pair[0]) + ": " + str(pair[1]) + "\n"
+            l.append(pair)
+        results.append(l)
 
         # EMOTION GUESSING
-        #TODO: more likely, less likely
         # find all available emotions in the classifier
         with open(path_emotion, encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
@@ -182,6 +189,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             emotion_avail_set = set(emotion_available_words)
             emotion_intersect = words_set.intersection(emotion_avail_set)
+            if len(emotion_intersect) < 3:
+                emotion_not_available = True
 
         emotion_scores = [0] * len(available_emotions)
         with open(path_emotion, encoding="utf-8") as csvfile:
@@ -193,15 +202,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         break
 
         if max(emotion_scores) == 0:
-            not_available = True
+            emotion_not_available = True
 
         candidates = []
         for i in range(3):
             candidates.append((available_emotions[emotion_scores.index(max(emotion_scores))], max(emotion_scores)))
             emotion_scores[emotion_scores.index(max(emotion_scores))] = 0
+        l = []
         for pair in candidates:
-            result_string += "emotion " + str(pair[0]) + ": " + str(pair[1]) + "\n"
-
+            l.append(pair)
+        results.append(l)
 
         # TOPIC GUESSING
         topic_words_topics = []
@@ -223,15 +233,84 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         topic_scores = sorted(topic_scores.items(), key=lambda x: x[1], reverse=True)
         if len(topic_scores) > 2:
-            for i in range(3):
-                result_string += "topic " + topic_scores[i][0] + ": " + str(topic_scores[i][1]) + "\n"
+            if topic_scores[i][0] == 0:
+                topic_not_available = True
+            else:
+                l = []
+                for i in range(3):
+                    if (topic_scores[i][1] != 0):
+                        l.append((topic_scores[i][0], str(topic_scores[i][1])))
+                results.append(l)
+        else:
+            topic_not_available = True
 
         result_label.setEnabled(True)
-        if not_available:
+        self.subredditGuessButtonL.setVisible(True)
+
+        # SUBREDDIT
+        result_string = ["This text is"]
+        if not sub_not_available:
+            sub_score = results[0][0][1]
+            if sub_score > 0.7:
+                sub_likely = "very"
+            elif sub_score < 0.4:
+                sub_likely = "quite"
+            elif sub_score < 0.1:
+                sub_likely = "a bit"
+            else:
+                sub_likely = ""
+            result_string.append(" {0} likely to come from /r/{1}".format(sub_likely, results[0][0][0]))
+
+        # EMOTIONS
+        if not emotion_not_available:
+            emotion_score = results[1][0][1]
+            result_string.append(", the dominating emotion is {0}".format(results[1][0][0]))
+        # TOPIC
+        if not topic_not_available:
+            topic_score = results[2][0][0]
+            result_string.append(", the topic is {0}".format(results[2][0][0]))
+        if len(result_string) <= 1:
             result_label.setText("DATA NOT AVAILABLE")
         else:
-            result_label.setText(result_string)
+            for substring in result_string:
+                result_label.setText(result_label.text() + substring)
+        self.old_text = result_label.text()
+        self.results = results
+        self.sn_available = sub_not_available
+        self.tn_available = topic_not_available
+        self.en_available = emotion_not_available
 
+    def subreddit_guess_details(self):
+        self.subredditGuessResultLabel.setText("")
+        self.subredditGuessResultLabel_2.setVisible(True)
+        self.subredditGuessResultLabel_3.setVisible(True)
+        result_labels = [self.subredditGuessResultLabel, self.subredditGuessResultLabel_2,
+                         self.subredditGuessResultLabel_3]
+        avail_flags = [ self.sn_available, self.en_available, self.tn_available ]
+        result_types = [ "SUBREDDITS", "EMOTIONS", "TOPICS" ]
+        i = 0
+        for results in self.results:
+            result_labels[i].setText(result_types[i])
+            if not avail_flags[i]:
+                for result in results:
+                    result_labels[i].setText("{0}\n{1}: {2}".format(result_labels[i].text(),
+                                                                    result[0], result[1]))
+            else:
+                result_labels[i].setText("DATA NOT AVAILABLE")
+            i += 1
+        self.subredditGuessButtonL.clicked.disconnect(self.subreddit_guess_details)
+        self.subredditGuessButtonL.clicked.connect(self.subreddit_less_details)
+        self.subredditGuessButtonL.setText("Less details")
+
+    def subreddit_less_details(self):
+        result_labels = [self.subredditGuessResultLabel_2, self.subredditGuessResultLabel_3]
+        for label in result_labels:
+            label.setText("")
+            label.setVisible(False)
+
+        self.subredditGuessResultLabel.setText(self.old_text)
+        self.subredditGuessButtonL.setText("More details")
+        self.subredditGuessButtonL.clicked.connect(self.subreddit_guess_details)
 
     def karma_length(self):
         # karma based on length
@@ -356,7 +435,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             if row[1] == time.toString("hap"):
                                 total += int(row[self.subreddits.index(sub) + 2])
                                 break
-                    result = round(total/7, self.output_round)
+                    result = round(total / 7, self.output_round)
                 else:
                     result = next(itertools.islice(reader, weekday * 24 + time.hour() + 1,
                                                    None))[self.subreddits.index(sub) + 2]
@@ -365,10 +444,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 lbound = math.floor(time.hour() / 3) * 3
                 ubound = math.ceil((time.hour() + 1) / 3) * 3
                 if combine_days:
-                        for i in range(7):
-                            for row in list(reader)[lbound + 1:ubound + 1]:
-                                total += float(row[self.subreddits.index(sub) + 2])
-                        result = total / (3*7)
+                    for i in range(7):
+                        for row in list(reader)[lbound + 1:ubound + 1]:
+                            total += float(row[self.subreddits.index(sub) + 2])
+                    result = total / (3 * 7)
                 else:
                     for row in list(reader)[weekday * 24 + lbound + 1:weekday * 24 + ubound + 1]:
                         total += float(row[self.subreddits.index(sub) + 2])
@@ -394,14 +473,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ratio_index = ratio - 59
         else:
             if ratio == 62:
-                ratio_index = 4 # because there's no ratio 0.62 in tables...
+                ratio_index = 4  # because there's no ratio 0.62 in tables...
             ratio_index = ratio - 60
         sub = self.upvoteSubNameComboBox.currentText()
         result_label = self.upvoteResultLabel
         path_pos = os.path.join(self.data_dir, self.tables_dir,
-                               "positive_sentiments_of_submissions_based_on_upvote_ratio.csv")
+                                "positive_sentiments_of_submissions_based_on_upvote_ratio.csv")
         path_neg = os.path.join(self.data_dir, self.tables_dir,
-                               "negative_sentiments_of_submissions_based_on_upvote_ratio.csv")
+                                "negative_sentiments_of_submissions_based_on_upvote_ratio.csv")
         with open(path_pos, encoding="utf-8") as csvfile_pos, open(path_neg, encoding="utf-8") as csvfile_neg:
             reader_pos = csv.reader(csvfile_pos, delimiter=self.csv_delimiter)
             reader_neg = csv.reader(csvfile_neg, delimiter=self.csv_delimiter)
@@ -429,7 +508,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     result_string = "positive: " + str(result_pos) + " negative: " + str(result_neg)
                 else:
                     result_string = "A post with upvote ratio " + str(ratio) + "% on /r/" + sub + " is likely to have " \
-                                    + "positive sentiment with probability: " + str(math.fabs(round(result_pos, self.output_round))) + \
+                                    + "positive sentiment with probability: " + str(
+                        math.fabs(round(result_pos, self.output_round))) + \
                                     ", and negative with: " + str(math.fabs(round(result_neg, self.output_round)))
             result_label.setText(result_string)
             result_label.setEnabled(True)
@@ -460,7 +540,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             if row[1] == str(time.hour()):
                                 total += float(row[self.subreddits.index(sub) + 2])
                                 break
-                    result = round(total/7, self.output_round)
+                    result = round(total / 7, self.output_round)
                 else:
                     result = next(itertools.islice(reader, weekday * 24 + time.hour() + 1,
                                                    None))[self.subreddits.index(sub) + 2]
@@ -472,7 +552,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     for i in range(7):
                         for row in list(reader)[lbound + 1:ubound + 1]:
                             total += float(row[self.subreddits.index(sub) + 2])
-                    result = total / (3*7)
+                    result = total / (3 * 7)
                 else:
                     for row in list(reader)[weekday * 24 + lbound + 1:weekday * 24 + ubound + 1]:
                         total += float(row[self.subreddits.index(sub) + 2])
