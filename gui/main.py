@@ -222,7 +222,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         topic_scores[word_topic[1]] = 0
 
         topic_scores = sorted(topic_scores.items(), key=lambda x: x[1], reverse=True)
-        if len(topic_scores) != 0:
+        if len(topic_scores) > 2:
             for i in range(3):
                 result_string += "topic " + topic_scores[i][0] + ": " + str(topic_scores[i][1]) + "\n"
 
