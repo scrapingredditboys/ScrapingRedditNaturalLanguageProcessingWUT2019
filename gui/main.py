@@ -132,6 +132,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.subredditGuessResultLabel_2.setVisible(False)
         self.subredditGuessResultLabel_3.setVisible(False)
         self.subredditGuessButtonL.setVisible(False)
+        self.subredditGuessButtonR.setEnabled(False)
+        self.subredditGuessButtonL.setEnabled(False)
+        button_r_old_text = self.subredditGuessButtonR.text()
+        self.subredditGuessButtonR.setText("Please wait...")
         sub_not_available = False
         emotion_not_available = False
         topic_not_available = False
@@ -142,6 +146,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         path_topic = os.path.join(self.data_dir, self.classifiers_dir, "TopicsClassifier.csv")
         results = []
         result_label.setText("")
+        self.update()
 
         scores = [0] * len(self.subreddits)
         # prepare words from input for processing
@@ -218,9 +223,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if max(emotion_scores) == 0:
             emotion_not_available = True
-        for i in range(len(available_emotions)):
-            emotion_scores[i] /= found_count
-            emotion_scores[i] = round(emotion_scores[i], 3)
+        else:
+            for i in range(len(available_emotions)):
+                emotion_scores[i] /= found_count
+                emotion_scores[i] = round(emotion_scores[i], 3)
 
         l = []
         for i in range(3):
@@ -336,6 +342,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.sn_available = sub_not_available
         self.tn_available = topic_not_available
         self.en_available = emotion_not_available
+        self.subredditGuessButtonR.setText(button_r_old_text)
+        self.subredditGuessButtonR.setEnabled(True)
+        self.subredditGuessButtonL.setEnabled(True)
 
     def subreddit_guess_details(self):
         self.subredditGuessResultLabel.setText("")
