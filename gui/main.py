@@ -168,18 +168,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if len(intersect) < 3:
                 sub_not_available = True
 
-        with open(path_sub, encoding="utf-8") as csvfile:
-            reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
             for word in intersect:
-                for row in list(reader)[0:]:
-                    if row[0] == word:
-                        scores = [float(x) + y for x, y in zip(row[1:], scores)]
-                        break
+                with open(path_sub, encoding="utf-8") as csvfile:
+                    reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
+                    for row in list(reader)[0:]:
+                        if row[0] == word:
+                            scores = [float(x) + y for x, y in zip(row[1:], scores)]
+                            break
 
         candidates = []
         for i in range(3):
             candidates.append((self.subreddits[scores.index(max(scores))], max(scores)))
             scores[scores.index(max(scores))] = 0
+        if candidates[0][0] == "WritingPrompts":
+            candidates[0] = (candidates[0][0], candidates[0][1] * 0.85)
+            candidates.sort(key=lambda tup: tup[1], reverse=True)
         l = []
         for pair in candidates:
             l.append(pair)
@@ -285,7 +288,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 valence += 0.0001
             theta = math.degrees(math.tan(arousal/valence) ** -1) % 360
             theta = round(theta) % 360
-            print(theta)
             if 0 <= theta < 30:
                 emotion = "pleased"
             elif 30 <= theta < 60:
