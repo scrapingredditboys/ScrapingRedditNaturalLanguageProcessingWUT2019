@@ -93,6 +93,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.meanSentimentRawDataCheckBox.stateChanged.connect(self.mean_sentiment)
         self.meanSentimentCombineDaysCheckBox.stateChanged.connect(lambda: self.combine_days_changed("meanSentiment"))
 
+        self.old_text = ""
+
     def scan_for_subreddits(self):
         with open(os.path.join(self.data_dir, self.classifiers_dir, "AverageWordUsageClassifier.csv"),
                   encoding="utf-8") as csvfile:
@@ -124,7 +126,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.mean_sentiment()
 
     def subreddit_guess(self):
+        self.subreddit_less_details()
         self.subredditGuessResultLabel.setVisible(True)
+        self.subredditGuessResultLabel.setText("")
+        self.subredditGuessResultLabel_2.setVisible(False)
+        self.subredditGuessResultLabel_3.setVisible(False)
+        self.subredditGuessButtonL.setVisible(False)
         sub_not_available = False
         emotion_not_available = False
         topic_not_available = False
@@ -248,7 +255,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             topic_not_available = True
 
         result_label.setEnabled(True)
-        self.subredditGuessButtonL.setVisible(True)
 
         # SUBREDDIT
         result_string = ["This text is"]
@@ -266,8 +272,46 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # EMOTIONS
         if not emotion_not_available:
-            emotion_score = results[1][0][1]
-            result_string.append(", the dominating emotion is {0}".format(results[1][0][0]))
+            arousal, valence = None, None
+            for result in results[1]:
+                if str.lower(result[0]) == "arousal":
+                    arousal = result[1]
+                if str.lower(result[0]) == "valence":
+                    valence = result[1]
+            if arousal and valence:
+                arousal -= 0.5
+                valence -= 0.5
+                theta = math.degrees(math.atan(arousal/valence))
+                theta = round(theta) % 360
+                print(theta)
+                if 0 <= theta < 30:
+                    emotion = "pleased"
+                elif 30 <= theta < 60:
+                    emotion = "happy"
+                elif 60 <= theta < 90:
+                    emotion = "excited"
+                elif 90 <= theta < 120:
+                    emotion = "annoying"
+                elif 120 <= theta < 150:
+                    emotion = "angry"
+                elif 150 <= theta < 180:
+                    emotion = "nervous"
+                elif 180 <= theta < 210:
+                    emotion = "sad"
+                elif 210 <= theta < 250:
+                    emotion = "bored"
+                elif 250 <= theta < 270:
+                    emotion = "sleepy"
+                elif 270 <= theta < 300:
+                    emotion = "calm"
+                elif 300 <= theta < 330:
+                    emotion = "peaceful"
+                elif 330 <= theta <= 360:
+                    emotion = "relaxed"
+                else:
+                    emotion = "relaxed"
+                result_string.append(", the dominating emotion is {0}".format(emotion))
+                results[1].append(("THETA (DEG)", round(theta)))
         # TOPIC
         if not topic_not_available:
             if emotion_not_available:
@@ -280,6 +324,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             for substring in result_string:
                 result_label.setText(result_label.text() + substring)
+            self.subredditGuessButtonL.setVisible(True)
         self.old_text = result_label.text()
         self.results = results
         self.sn_available = sub_not_available
@@ -293,7 +338,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         result_labels = [self.subredditGuessResultLabel, self.subredditGuessResultLabel_2,
                          self.subredditGuessResultLabel_3]
         avail_flags = [ self.sn_available, self.en_available, self.tn_available ]
-        result_types = [ "SUBREDDITS", "EMOTIONS", "TOPICS" ]
+        result_types = [ "SUBREDDITS", "EMOTION COEFF.", "TOPICS" ]
         i = 0
         for results in self.results:
             result_labels[i].setText(result_types[i])
