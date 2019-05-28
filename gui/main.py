@@ -57,6 +57,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # guessing sub based on given text
         self.subredditGuessButtonR.clicked.connect(self.subreddit_guess)
         self.subredditGuessButtonL.setVisible(False)
+        self.subredditGuessResultLabel.setVisible(False)
         self.subredditGuessResultLabel_2.setVisible(False)
         self.subredditGuessResultLabel_3.setVisible(False)
         self.subredditGuessButtonL.clicked.connect(self.subreddit_guess_details)
@@ -123,6 +124,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.mean_sentiment()
 
     def subreddit_guess(self):
+        self.subredditGuessResultLabel.setVisible(True)
         sub_not_available = False
         emotion_not_available = False
         topic_not_available = False
@@ -132,6 +134,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         path_emotion = os.path.join(self.data_dir, self.classifiers_dir, "EmotionsClassifier.csv")
         path_topic = os.path.join(self.data_dir, self.classifiers_dir, "TopicsClassifier.csv")
         results = []
+        result_label.setText("")
 
         scores = [0] * len(self.subreddits)
         # prepare words from input for processing
@@ -252,14 +255,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not sub_not_available:
             sub_score = results[0][0][1]
             if sub_score > 0.7:
-                sub_likely = "very"
+                sub_likely = " very"
             elif sub_score < 0.4:
-                sub_likely = "quite"
+                sub_likely = " quite"
             elif sub_score < 0.1:
-                sub_likely = "a bit"
+                sub_likely = " a bit"
             else:
                 sub_likely = ""
-            result_string.append(" {0} likely to come from /r/{1}".format(sub_likely, results[0][0][0]))
+            result_string.append("{0} likely to come from /r/{1}".format(sub_likely, results[0][0][0]))
 
         # EMOTIONS
         if not emotion_not_available:
@@ -267,7 +270,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             result_string.append(", the dominating emotion is {0}".format(results[1][0][0]))
         # TOPIC
         if not topic_not_available:
-            topic_score = results[2][0][0]
+            if emotion_not_available:
+                emotion_score = results[1][0][1]
+            else:
+                topic_score = results[2][0][1]
             result_string.append(", the topic is {0}".format(results[2][0][0]))
         if len(result_string) <= 1:
             result_label.setText("DATA NOT AVAILABLE")
