@@ -146,7 +146,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         scores = [0] * len(self.subreddits)
         # prepare words from input for processing
         table = str.maketrans({key: None for key in string.punctuation})
-        input_stripped = input.translate(table)
+        input_stripped = input.strip().translate(table)
         words_cap = input_stripped.split(' ')
         words = []
         for word_cap in words_cap:
@@ -203,24 +203,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 emotion_not_available = True
 
         emotion_scores = [0] * len(available_emotions)
-        with open(path_emotion, encoding="utf-8") as csvfile:
-            reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
-            for word in emotion_intersect:
+        found_count = 0
+        for word in emotion_intersect:
+            with open(path_emotion, encoding="utf-8") as csvfile:
+                reader = csv.reader(csvfile, delimiter=self.csv_delimiter)
                 for row in list(reader)[0:]:
                     if row[0] == word:
+                        found_count += 1
                         emotion_scores = [float(x) + y for x, y in zip(row[1:], emotion_scores)]
                         break
 
         if max(emotion_scores) == 0:
             emotion_not_available = True
+        for i in range(len(available_emotions)):
+            emotion_scores[i] /= found_count
+            emotion_scores[i] = round(emotion_scores[i], 3)
 
-        candidates = []
-        for i in range(3):
-            candidates.append((available_emotions[emotion_scores.index(max(emotion_scores))], max(emotion_scores)))
-            emotion_scores[emotion_scores.index(max(emotion_scores))] = 0
         l = []
-        for pair in candidates:
-            l.append(pair)
+        for i in range(3):
+            l.append((available_emotions[i], emotion_scores[i]))
         results.append(l)
 
         # TOPIC GUESSING
@@ -272,53 +273,56 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # EMOTIONS
         if not emotion_not_available:
-            arousal, valence = None, None
-            for result in results[1]:
-                if str.lower(result[0]) == "arousal":
-                    arousal = result[1]
-                if str.lower(result[0]) == "valence":
-                    valence = result[1]
-            if arousal and valence:
-                arousal -= 0.5
-                valence -= 0.5
-                theta = math.degrees(math.atan(arousal/valence))
-                theta = round(theta) % 360
-                print(theta)
-                if 0 <= theta < 30:
-                    emotion = "pleased"
-                elif 30 <= theta < 60:
-                    emotion = "happy"
-                elif 60 <= theta < 90:
-                    emotion = "excited"
-                elif 90 <= theta < 120:
-                    emotion = "annoying"
-                elif 120 <= theta < 150:
-                    emotion = "angry"
-                elif 150 <= theta < 180:
-                    emotion = "nervous"
-                elif 180 <= theta < 210:
-                    emotion = "sad"
-                elif 210 <= theta < 250:
-                    emotion = "bored"
-                elif 250 <= theta < 270:
-                    emotion = "sleepy"
-                elif 270 <= theta < 300:
-                    emotion = "calm"
-                elif 300 <= theta < 330:
-                    emotion = "peaceful"
-                elif 330 <= theta <= 360:
-                    emotion = "relaxed"
+            valence = results[1][0][1] - 0.5
+            arousal = results[1][1][1] - 0.6
+            if results[0][0][0] == "depression":
+                valence -= 0.1
+                if arousal >= 0:
+                    arousal -= 0.1
                 else:
-                    emotion = "relaxed"
-                result_string.append(", the dominating emotion is {0}".format(emotion))
-                results[1].append(("THETA (DEG)", round(theta)))
+                    arousal -= 0.1
+            if valence == 0:
+                valence += 0.0001
+            theta = math.degrees(math.tan(arousal/valence) ** -1) % 360
+            theta = round(theta) % 360
+            print(theta)
+            if 0 <= theta < 30:
+                emotion = "pleased"
+            elif 30 <= theta < 60:
+                emotion = "happy"
+            elif 60 <= theta < 90:
+                emotion = "excited"
+            elif 90 <= theta < 120:
+                emotion = "annoying"
+            elif 120 <= theta < 150:
+                emotion = "angry"
+            elif 150 <= theta < 170:
+                emotion = "nervous"
+            elif 170 <= theta < 210:
+                emotion = "sad"
+            elif 210 <= theta < 250:
+                emotion = "bored"
+            elif 250 <= theta < 270:
+                emotion = "sleepy"
+            elif 270 <= theta < 300:
+                emotion = "calm"
+            elif 300 <= theta < 330:
+                emotion = "peaceful"
+            elif 330 <= theta <= 360:
+                emotion = "relaxed"
+            else:
+                emotion = "relaxed"
+            result_string.append(", the dominating emotion is {0}".format(emotion))
+            results[1].append(("THETA (DEG)", round(theta)))
         # TOPIC
         if not topic_not_available:
-            if emotion_not_available:
-                emotion_score = results[1][0][1]
+            if emotion_not_available and sub_not_available:
+                topic_score = results[0][0]
+            elif emotion_not_available and not sub_not_available:
+                topic_score = results[1][0]
             else:
-                topic_score = results[2][0][1]
-            result_string.append(", the topic is {0}".format(results[2][0][0]))
+                topic_score = results[2][0]
+            result_string.append(", the topic is {0}".format(topic_score[0]))
         if len(result_string) <= 1:
             result_label.setText("DATA NOT AVAILABLE")
         else:
